@@ -76,6 +76,9 @@ sudo /var/lib/mailman/bin/check_perms -f > /dev/null
 #   Postfix configuration                            #
 #################################################### #
 
+# Backup existing postfix configuration
+sudo cp /etc/postfix/main.cf /etc/postfix/main.cf.beforeMailmanInstall
+
 # Inspired from https://www.howtoforge.com/how-to-install-and-configure-mailman-with-postfix-on-debian-squeeze
 
 # Not sure what this does exactly, but okay
