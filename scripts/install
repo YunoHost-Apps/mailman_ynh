@@ -1,0 +1,122 @@
+#!/bin/bash
+
+####################################################
+#   Retrieve arguments / set global variables      #
+####################################################
+
+app=mailman
+
+domain=$1
+path=$2
+admin=$3
+adminPass=$4
+listPrefix=$5
+mailmanLanguage=$6
+is_public=$7
+
+####################################################
+#   Check domain / path availability               #
+####################################################
+
+sudo yunohost app checkurl $domain$path -a $app
+
+if [[ ! $? -eq 0 ]]; then
+    echo "Error : domain/path url isnt available"
+    exit 1
+fi
+
+####################################################
+#   Check that admin user is an existing account   #
+####################################################
+
+sudo yunohost user list --json | grep -q "\"username\": \"$admin\""
+if [[ ! $? -eq 0 ]]; then
+    echo "Error : the chosen admin user does not exist"
+    exit 1
+fi
+
+sudo yunohost app setting $app admin -v $admin
+
+sudo yunohost app setting $app is_public -v "$is_public"
+
+# ################################################# #
+#  Install mailman (and fcgiwrap)                   #
+# ################################################# #
+
+sudo apt-get install mailman fcgiwrap <<< "Y"
+
+# ################################################# #
+#  Edit mailman config                              #
+# ################################################# #
+
+sudo /var/lib/mailman/bin/mmsitepass $adminPass
+
+sed -i "s@LIST_DOMAIN@$listPrefix.$domain@g"   ../conf/mm_cfg.py
+sed -i "s@WEB_DOMAIN_HOST@$domain@g"           ../conf/mm_cfg.py
+sed -i "s@WEB_DOMAIN_SUFFIX@$path@g"           ../conf/mm_cfg.py
+sed -i "s@MAILMAN_LANGUAGE@$mailmanLanguage@g" ../conf/mm_cfg.py
+sudo cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
+
+# ################################################# #
+#  Create first list 'mailman'                      #
+#  and update aliases accordingly                   #
+# ################################################# #
+
+sudo newlist mailman root@$domain $adminPass <<< "\n"
+sudo /var/lib/mailman/bin/genaliases
+
+# ################################################# #
+#  Fix mailman permissions                          #
+# ################################################# #
+
+sudo chown -hR list:list /var/lib/mailman/
+sudo /var/lib/mailman/bin/check_perms -f > /dev/null
+
+#################################################### #
+#   Postfix configuration                            #
+#################################################### #
+
+# Inspired from https://www.howtoforge.com/how-to-install-and-configure-mailman-with-postfix-on-debian-squeeze
+
+# Not sure what this does exactly, but okay
+sudo postconf -e "mailman_destination_recipient_limit = 1"
+
+# Add the mailman aliases
+sudo postconf -e "alias_maps = hash:/etc/aliases, hash:/var/lib/mailman/data/aliases"
+
+# Include lists.domain as valid destination
+sudo postconf -e "relay_domains = $listPrefix.$domain"
+sudo postconf -e "mydestination = localhost, \$mydomain, lists.\$mydomain"
+
+#  lists.domain should be handled by mailman
+sudo postconf -e "transport_maps = hash:/etc/postfix/transport"
+sudo touch /etc/postfix/transport
+sudo bash -c "echo $listPrefix.$domain mailman: >> /etc/postfix/transport"
+sudo postmap -v /etc/postfix/transport
+
+####################################################
+#   Nginx configuration                            #
+####################################################
+
+sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+####################################################
+#   SSOWat configuration                           #
+####################################################
+
+if [ "$is_public" = "Yes" ];
+then
+      sudo yunohost app setting $app unprotected_regex -v \
+     "/listinfo$,/listinfo/[a-zA-Z]*$,/subscribe/[a-zA-Z]*$,/roster/[a-zA-Z]*$,/private/[a-zA-Z]*/$,/options/[a-zA-Z]*$"   
+fi
+
+# ################################################# #
+#  Restart services                                 #
+# ################################################# #
+
+sudo service mailman start
+sudo service postfix restart
+sudo service nginx   restart
+sudo yunohost app ssowatconf
+
