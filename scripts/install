@@ -43,7 +43,7 @@ sudo yunohost app setting $app is_public -v "$is_public"
 #  Install mailman (and fcgiwrap)                   #
 # ################################################# #
 
-sudo apt-get install mailman fcgiwrap <<< "Y"
+sudo apt-get install mailman fcgiwrap --assume-yes
 
 # ################################################# #
 #  Edit mailman config                              #
