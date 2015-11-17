@@ -89,7 +89,7 @@ sudo postconf -e "alias_maps = hash:/etc/aliases, hash:/var/lib/mailman/data/ali
 
 # Include lists.domain as valid destination
 sudo postconf -e "relay_domains = $listPrefix.$domain"
-sudo postconf -e "mydestination = localhost, \$mydomain, lists.\$mydomain"
+sudo postconf -e "mydestination = localhost, $listPrefix.$domain"
 
 #  lists.domain should be handled by mailman
 sudo postconf -e "transport_maps = hash:/etc/postfix/transport"
