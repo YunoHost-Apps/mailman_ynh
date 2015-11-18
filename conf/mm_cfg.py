@@ -58,7 +58,8 @@ MAILMAN_SITE_LIST = 'mailman'
 # If you change these, you have to configure your http server
 # accordingly (Alias and ScriptAlias directives in most httpds)
 DEFAULT_URL_PATTERN = 'https://%sWEB_DOMAIN_SUFFIX/'
-IMAGE_LOGOS         = '/images/mailman/'
+IMAGE_LOGOS         = '/mailman/images/'
+SITE_LOGO           = '/mailman/images/debianpowered.png'
 
 #-------------------------------------------------------------
 # Default domain for email addresses of newly created MLs
@@ -105,3 +106,20 @@ POSTFIX_STYLE_VIRTUAL_DOMAINS = [ 'LIST_DOMAIN' ]
 
 # Note - if you're looking for something that is imported from mm_cfg, but you
 # didn't find it above, it's probably in /usr/lib/mailman/Mailman/Defaults.py.
+
+
+#-------------------------------------------------------------
+# Web page style configuration
+
+WEB_BG_COLOR = '#f0f0f0'                          # Page background
+WEB_HEADER_COLOR = '#f0f0f0'                      # Major section headers
+WEB_SUBHEADER_COLOR = '#fff0d0'                   # Minor section headers
+WEB_ADMINITEM_COLOR = '#e7e7e7'                   # Option field background
+WEB_ADMINPW_COLOR = '#ff9999'                     # Password box color
+WEB_ERROR_COLOR = 'red'                           # Error message foreground
+WEB_LINK_COLOR = ''                               # If true, forces LINK=
+WEB_ALINK_COLOR = ''                              # If true, forces ALINK=
+WEB_VLINK_COLOR = ''                              # If true, forces VLINK=
+WEB_HIGHLIGHT_COLOR = '#dddddd'                   # If true, alternating rows
+                                                  # in listinfo & admin display
+

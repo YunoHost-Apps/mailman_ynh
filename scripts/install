@@ -110,9 +110,26 @@ sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 if [ "$is_public" = "Yes" ];
 then
-      sudo yunohost app setting $app unprotected_regex -v \
-     "/listinfo$,/listinfo/[a-zA-Z]*$,/subscribe/[a-zA-Z]*$,/roster/[a-zA-Z]*$,/private/[a-zA-Z]*/$,/options/[a-zA-Z]*$"   
-fi
+
+      # Build regex list, i.e. "/mailman/listinfo,/mailman/listinfo/[listnames]$,..."
+      regexList=$path/listinfo$
+
+      for word in listinfo subscribe private roster
+      do
+              regexList="$regexList,$path/$word/[a-zA-Z%-]*$"
+      done
+      # This guys require potentially more complex stuff like mail adresses in the url, or slashes
+      for word in options confirm images
+      do
+              regexList="$regexList,$path/$word/[a-zA-Z%-%/%.%@]*$"
+      done
+
+      # Set the regex in yunohost, later taken into account by ssowatconf
+      sudo yunohost app setting $app unprotected_regex -v $regexList
+fii
+
+
+
 
 # ################################################# #
 #  Restart services                                 #
