@@ -126,7 +126,7 @@ then
 
       # Set the regex in yunohost, later taken into account by ssowatconf
       sudo yunohost app setting $app unprotected_regex -v $regexList
-fii
+fi
 
 
 
