@@ -121,7 +121,7 @@ then
       # This guys require potentially more complex stuff like mail adresses in the url, or slashes
       for word in options confirm images
       do
-              regexList="$regexList,$path/$word/[a-zA-Z%-%/%.%@]*$"
+              regexList="$regexList,$path/$word/[a-zA-Z0-9%-%/%.%@]*$"
       done
 
       # Set the regex in yunohost, later taken into account by ssowatconf
