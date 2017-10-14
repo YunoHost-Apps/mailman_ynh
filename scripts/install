@@ -47,7 +47,7 @@ then
     # Build regex list, i.e. "/mailman/listinfo,/mailman/listinfo/[listnames]$,..."
     regexList=$path_url/listinfo$
 
-    for word in listinfo subscribe private roster
+    for word in listinfo subscribe private roster archives
     do
         regexList="$regexList,$path_url/$word/[a-zA-Z%-]*$"
     done
