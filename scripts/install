@@ -58,7 +58,7 @@ then
     done
 
     # Set the regex in yunohost, later taken into account by ssowatconf
-    ynh_app_setting_set $app language $language
+    ynh_app_setting_set $app unprotected_regex -v $regexList
 fi
 
 #=================================================
