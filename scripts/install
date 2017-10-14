@@ -38,28 +38,24 @@ ynh_app_setting_set $app is_public $is_public
 ynh_app_setting_set $app language  $language
 
 #=================================================
-# SSOWat configuration
+# SSOWAT CONFIGURATION
 #=================================================
 
-if [ "$is_public" = "Yes" ];
-then
+# Build regex list, i.e. "/mailman/listinfo,/mailman/listinfo/[listnames]$,..."
+regexList=$path_url/listinfo$
 
-    # Build regex list, i.e. "/mailman/listinfo,/mailman/listinfo/[listnames]$,..."
-    regexList=$path_url/listinfo$
+for word in listinfo subscribe private roster archives
+do
+    regexList="$regexList,$path_url/$word/[a-zA-Z%-]*$"
+done
+# This guys require potentially more complex stuff like mail adresses in the url, or slashes
+for word in options confirm images
+do
+    regexList="$regexList,$path_url/$word/[a-zA-Z0-9%-%/%.%@]*$"
+done
 
-    for word in listinfo subscribe private roster archives
-    do
-        regexList="$regexList,$path_url/$word/[a-zA-Z%-]*$"
-    done
-    # This guys require potentially more complex stuff like mail adresses in the url, or slashes
-    for word in options confirm images
-    do
-        regexList="$regexList,$path_url/$word/[a-zA-Z0-9%-%/%.%@]*$"
-    done
-
-    # Set the regex in yunohost, later taken into account by ssowatconf
-    ynh_app_setting_set $app unprotected_regex -v $regexList
-fi
+# Set the regex in yunohost, later taken into account by ssowatconf
+[ "$is_public" -eq 0 ] || ynh_app_setting_set $app unprotected_regex $regexList
 
 #=================================================
 # STANDARD MODIFICATIONS
