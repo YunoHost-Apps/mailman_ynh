@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -e
+
+do_pre_regen() {
+  pending_dir=$1
+
+  # Patch postfix conf
+  postfix_main_cf="${pending_dir}/../postfix/etc/postfix/main.cf"
+
+  # FIXME : check this file actually exists to not crash when only running this
+  # hook alone
+
+  sudo sed -e "s@^alias_maps\s*=\s*\(.*\)@alias_maps = \1,hash:/var/lib/mailman/data/aliases@"\
+           -e "s@^virtual_alias_maps\s*=\s*\(.*\)@virtual_alias_maps = hash:/var/lib/mailman/data/virtual-mailman,\1@"\
+           -i $postfix_main_cf
+
+}
+
+do_post_regen() {
+
+  regen_conf_files=$1
+  
+}
+
+FORCE=${2:-0}
+DRY_RUN=${3:-0}
+
+case "$1" in
+  pre)
+    do_pre_regen $4
+    ;;
+  post)
+    do_post_regen $4
+    ;;
+  *)
+    echo "hook called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+exit 0
+
+
+
+

@@ -1,20 +1,47 @@
 #!/bin/bash
-app=mailman
 
-domain=$(sudo yunohost app setting $app domain)
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-# Remove mailman and fcgiwrap
-sudo apt-get remove mailman fcgiwrap <<< "Y"
+source /usr/share/yunohost/helpers
 
-# Backup current postfix configuration 
-sudo cp /etc/postfix/main.cf /etc/postfix/main.cf.beforeMailmanRemove
-# Restore postfix configuration prior to mailman install
-sudo mv /etc/postfix/main.cf.beforeMailmanInstall /etc/postfix/main.cf
+app=$YNH_APP_INSTANCE_NAME
 
-# Remove nginx conf for this app
-sudo rm -f /etc/nginx/conf.d/$domain.d/$app.conf
+domain=$(ynh_app_setting_get $app domain)
 
-# Restart services
-sudo service nginx reload
-sudo yunohost app ssowatconf
+#=================================================
+# STANDARD REMOVE
+#=================================================
+# REMOVE DEPENDENCIES
+#=================================================
+
+ynh_remove_app_dependencies
+
+#=================================================
+# REMOVE REMAINING FILES
+#=================================================
+
+# We need to remove this otherwise mailman will do some shit when reinstalling
+ynh_secure_remove "/var/lib/mailman"
+
+# Remove hook for postfix conf
+ynh_secure_remove /usr/share/yunohost/hooks/conf_regen/98-postfix_mailman
+
+#=================================================
+# REMOVE THE NGINX CONFIGURATION
+#=================================================
+
+ynh_remove_nginx_config
+
+#=================================================
+# RELOAD SERVICES / CONF
+#=================================================
+
+yunohost service regen-conf postfix
+systemctl restart postfix
+systemctl reload nginx
+yunohost app ssowatconf
 

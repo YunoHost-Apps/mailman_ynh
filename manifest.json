@@ -1,71 +1,74 @@
 {
     "name": "Mailman",
     "id": "mailman",
+    "packaging_format": 1,
     "description": {
         "en": "Free software for managing electronic mail discussion and e-newsletter lists.",
         "fr": "Logiciel libre pour gérer des listes de diffusion et newsletters."
     },
-    "licence": "free",
+    "version": "2.1-2",
+    "licence": "GPLv2",
     "maintainer": {
         "name": "Alex Aubin",
         "email": "alex.aubin@mailoo.org",
         "url": "https://github.com/alexAubin/"
     },
-    "multi_instance": "false",
-    "arguments": {
-        "install" : [
-            {
-                "name": "domain",
-                "ask": {
-                    "en": "Choose a domain for mailman"
-                },
-                "example": "example.com"
-            },
-            {
-                "name": "path",
-                "ask": {
-                    "en": "Choose a path for mailman "
-                },
-                "example": "/mailman, /lists",
-                "default": "/mailman"
-            },
-            {
-                "name": "admin",
-                "ask": {
-                    "en": "Choose an admin user"
-                },
-                "example": "johndoe"
-            },
-            {
-                "name": "adminPass",
-                "ask": {
-                    "en": "Choose a mailman administration password"
-                }
-            },
-            {
-                "name": "listPrefix",
-                "ask": {
-                    "en": "Choose a prefix for mailman lists (i.e. prexif in listname@prefix.yourdomain)"
-                },
-                "example" : "lists",
-                "default" : "lists"
-            },
-            {
-                "name": "language",
-                "ask": {
-                    "en": "Choose a default language for mailman"
-                },
-                "example" : "en, fr, de, ...",
-                "default" : "en"
-            },
-            {
-                "name": "is_public",
-                "ask": {
-                    "en": "Is it a public application ?"
-                },
-                "choices": ["Yes", "No"],
-                "default": "Yes"
-            }
-        ]
+    "requirements": {
+        "yunohost": ">= 2.7.2"
+    },
+    "multi_instance": false,
+    "services": [
+        "nginx",
+        "postfix"
+    ],
+    "arguments": { "install" : [
+    {
+        "name": "domain",
+        "type": "domain",
+        "example": "example.com",
+        "ask": {
+            "en": "Choose a domain for mailman"
+        },
+        "help": {
+            "en": "This will be the domain on which mailing lists will run"
+        }
+    },
+    {
+        "name": "path",
+        "type": "path",
+        "example": "/mailman, /lists",
+        "default": "/mailman",
+        "ask": {
+            "en": "Choose a path for mailman"
+        },
+        "help": {
+            "en": "The web interface for mailman will be accessible at the.domain.tld/path"
+        }
+    },
+    {
+        "name": "admin_password",
+        "ask": {
+            "en": "Choose a mailman administration password"
+        },
+        "help": {
+            "en": "It will be needed to create and administrate lists. Be careful though : this password will be stored in clear on the disk :/ ..."
+        }
+    },
+    {
+        "name": "language",
+        "choices": ["en", "fr", "de", "it"],
+        "default" : "en",
+        "ask": {
+            "en": "Choose a default language for mailman"
+        }
+    },
+    {
+        "name": "is_public",
+        "type": "boolean",
+        "default": true,
+        "ask": {
+            "en": "Make the web interface public ?"
+        }
     }
+    ]}
 }
