@@ -79,7 +79,7 @@ VIRTUAL_MAILMAN_LOCAL_DOMAIN = "localhost"
 
 #-------------------------------------------------------------
 # Path for archives
-PUBLIC_ARCHIVE_URL = 'https://%(hostname)s/mailman/archives/%(listname)s/'
+PUBLIC_ARCHIVE_URL = 'https://%(hostname)s/mailman/archives/%(listname)s'
 
 #-------------------------------------------------------------
 # The default language for this server.
