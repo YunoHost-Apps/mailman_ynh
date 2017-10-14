@@ -97,6 +97,16 @@ chown -hR list:list /var/lib/mailman/
 /var/lib/mailman/bin/check_perms -f > /dev/null
 
 #=================================================
+# TWEAKING ....
+#=================================================
+
+# Custom template for listinfo
+cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
+
+# Tweak ugly footer, just say it's powered by mailman 2.1...
+sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "Powered by Mailman 2.1")/g' /var/lib/mailman/Mailman/htmlformat.py
+
+#=================================================
 # POSTFIX CONFIGURATION
 #=================================================
 
