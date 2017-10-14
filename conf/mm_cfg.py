@@ -78,6 +78,10 @@ add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
 VIRTUAL_MAILMAN_LOCAL_DOMAIN = "localhost"
 
 #-------------------------------------------------------------
+# Path for archives
+PUBLIC_ARCHIVE_URL = 'https://%(hostname)s/mailman/archives/%(listname)s/'
+
+#-------------------------------------------------------------
 # The default language for this server.
 DEFAULT_SERVER_LANGUAGE = '__MAILMAN_LANGUAGE__'
 
