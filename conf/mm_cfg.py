@@ -73,6 +73,11 @@ DEFAULT_URL_HOST   = '__MAILMAN_DOMAIN__'
 add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
 
 #-------------------------------------------------------------
+# We need this for the virtual alias file to explicitly
+# contain @localhost
+VIRTUAL_MAILMAN_LOCAL_DOMAIN = "localhost"
+
+#-------------------------------------------------------------
 # The default language for this server.
 DEFAULT_SERVER_LANGUAGE = '__MAILMAN_LANGUAGE__'
 
