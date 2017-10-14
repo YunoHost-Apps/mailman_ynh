@@ -117,7 +117,7 @@ ynh_add_nginx_config
 
 yunohost app ssowatconf
 
-systemctl enable mailman
-systemctl start mailman
+systemctl enable mailman >/dev/null 2>&1
+systemctl restart mailman
 systemctl restart postfix
 systemctl reload nginx
