@@ -9,3 +9,7 @@ Mailman package for Yunohost
 
 Mailman is a (lightweight) free software for managing electronic mail discussion and e-newsletter lists. [Official website](http://www.list.org/)
 
+Screenshot
+----------
+
+![](./doc/screenshot.png)
