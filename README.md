@@ -1,9 +1,11 @@
+Mailman package for Yunohost
+============================
 
-Mailman for Yunohost
-====================
+![](./doc/mailman-logo.jpg)
 
-Mailman is a free software for managing electronic mail discussion and e-newsletter lists. [Official website](http://www.list.org/)
+[![Install Mailman with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=mailman)
 
-This package intends to provide a straightforward installation and configuration of mailman, nginx and postfix according to typical needs.
+![](https://dash.yunohost.org/integration/mailman.svg)
 
-:warning: This package should be improved. Right now, the interface with postfix is very dirty and it might break stuff on the mid/long term :/
+Mailman is a (lightweight) free software for managing electronic mail discussion and e-newsletter lists. [Official website](http://www.list.org/)
+
