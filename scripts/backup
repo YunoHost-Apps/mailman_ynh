@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#=================================================
+# GENERIC STARTING
+#=================================================
+
+# Generic helpers
+source /usr/share/yunohost/helpers
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get $app domain)
+
+#=================================================
+# BACKUP FILES
+#=================================================
+
+ynh_backup "/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
+
+for NAME in archives data lists qfiles spam
+do
+	ynh_backup "/var/lib/mailman/$NAME"
+done
+
+ynh_backup "/etc/mailman/"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
