@@ -121,15 +121,15 @@ POSTFIX_STYLE_VIRTUAL_DOMAINS = [ '__MAILMAN_DOMAIN__' ]
 #-------------------------------------------------------------
 # Web page style configuration
 
-WEB_BG_COLOR = '#f0f0f0'                          # Page background
-WEB_HEADER_COLOR = '#f0f0f0'                      # Major section headers
+WEB_BG_COLOR = '#ffffff'                          # Page background
+WEB_HEADER_COLOR = '#ffffff'                      # Major section headers
 WEB_SUBHEADER_COLOR = '#fff0d0'                   # Minor section headers
-WEB_ADMINITEM_COLOR = '#e7e7e7'                   # Option field background
+WEB_ADMINITEM_COLOR = '#f0f0f0'                   # Option field background
 WEB_ADMINPW_COLOR = '#ff9999'                     # Password box color
 WEB_ERROR_COLOR = 'red'                           # Error message foreground
 WEB_LINK_COLOR = ''                               # If true, forces LINK=
 WEB_ALINK_COLOR = ''                              # If true, forces ALINK=
 WEB_VLINK_COLOR = ''                              # If true, forces VLINK=
-WEB_HIGHLIGHT_COLOR = '#dddddd'                   # If true, alternating rows
+WEB_HIGHLIGHT_COLOR = '#f0f0f0'                   # If true, alternating rows
                                                   # in listinfo & admin display
 
