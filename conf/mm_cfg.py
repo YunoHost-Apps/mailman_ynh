@@ -6,14 +6,14 @@
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA
 
@@ -57,23 +57,33 @@ MAILMAN_SITE_LIST = 'mailman'
 #-------------------------------------------------------------
 # If you change these, you have to configure your http server
 # accordingly (Alias and ScriptAlias directives in most httpds)
-DEFAULT_URL_PATTERN = 'https://%sWEB_DOMAIN_SUFFIX/'
+
+DEFAULT_URL_PATTERN = 'https://%s__MAILMAN_WEB_PATH__/'
 IMAGE_LOGOS         = '/mailman/images/'
 SITE_LOGO           = '/mailman/images/debianpowered.png'
 
 #-------------------------------------------------------------
 # Default domain for email addresses of newly created MLs
-DEFAULT_EMAIL_HOST = 'LIST_DOMAIN'
+DEFAULT_EMAIL_HOST = '__MAILMAN_DOMAIN__'
 #-------------------------------------------------------------
 # Default host for web interface of newly created MLs
-DEFAULT_URL_HOST   = 'WEB_DOMAIN_HOST'
+DEFAULT_URL_HOST   = '__MAILMAN_DOMAIN__'
 #-------------------------------------------------------------
 # Required when setting any of its arguments.
 add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
 
 #-------------------------------------------------------------
+# We need this for the virtual alias file to explicitly
+# contain @localhost
+VIRTUAL_MAILMAN_LOCAL_DOMAIN = "localhost"
+
+#-------------------------------------------------------------
+# Path for archives
+PUBLIC_ARCHIVE_URL = 'https://%(hostname)s/mailman/archives/%(listname)s'
+
+#-------------------------------------------------------------
 # The default language for this server.
-DEFAULT_SERVER_LANGUAGE = 'MAILMAN_LANGUAGE'
+DEFAULT_SERVER_LANGUAGE = '__MAILMAN_LANGUAGE__'
 
 #-------------------------------------------------------------
 # Iirc this was used in pre 2.1, leave it for now
@@ -96,7 +106,7 @@ DEFAULT_SEND_REMINDERS = 0
 # /usr/share/doc/mailman/README.Debian first.
 MTA='Postfix'
 
-POSTFIX_STYLE_VIRTUAL_DOMAINS = [ 'LIST_DOMAIN' ]
+POSTFIX_STYLE_VIRTUAL_DOMAINS = [ '__MAILMAN_DOMAIN__' ]
 
 #-------------------------------------------------------------
 # Uncomment if you want to filter mail with SpamAssassin. For

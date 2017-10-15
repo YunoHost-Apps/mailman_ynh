@@ -1,142 +1,129 @@
 #!/bin/bash
 
-####################################################
-#   Retrieve arguments / set global variables      #
-####################################################
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-app=mailman
+source /usr/share/yunohost/helpers
 
-domain=$1
-path=$2
-admin=$3
-adminPass=$4
-listPrefix=$5
-mailmanLanguage=$6
-is_public=$7
+#=================================================
+# MANAGE FAILURE OF THE SCRIPT
+#=================================================
 
-####################################################
-#   Check domain / path availability               #
-####################################################
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
 
-sudo yunohost app checkurl $domain$path -a $app
+#=================================================
+# RETRIEVE ARGUMENTS FROM THE MANIFEST
+#=================================================
 
-if [[ ! $? -eq 0 ]]; then
-    echo "Error : domain/path url isnt available"
-    exit 1
-fi
+domain=$YNH_APP_ARG_DOMAIN
+path_url=$YNH_APP_ARG_PATH
+admin_password=$YNH_APP_ARG_ADMIN_PASSWORD
+language=$YNH_APP_ARG_LANGUAGE
+is_public=$YNH_APP_ARG_IS_PUBLIC
 
-####################################################
-#   Check that admin user is an existing account   #
-####################################################
+app=$YNH_APP_INSTANCE_NAME
 
-sudo yunohost user list --json | grep -q "\"username\": \"$admin\""
-if [[ ! $? -eq 0 ]]; then
-    echo "Error : the chosen admin user does not exist"
-    exit 1
-fi
+#=================================================
+# STORE SETTINGS FROM MANIFEST
+#=================================================
 
-sudo yunohost app setting $app admin -v $admin
+# Register (book) web path
+ynh_webpath_register $app $domain $path_url
 
-sudo yunohost app setting $app is_public -v "$is_public"
+ynh_app_setting_set $app is_public $is_public
+ynh_app_setting_set $app language  $language
 
-# ################################################# #
-#  Install mailman (and fcgiwrap)                   #
-# ################################################# #
+#=================================================
+# SSOWAT CONFIGURATION
+#=================================================
 
-sudo apt-get install mailman fcgiwrap --assume-yes
+# Build regex list, i.e. "/mailman/listinfo,/mailman/listinfo/[listnames]$,..."
+regexList=$path_url/listinfo$
 
-# ################################################# #
-#  Edit mailman config                              #
-# ################################################# #
+for word in listinfo subscribe private roster archives
+do
+    regexList="$regexList,$path_url/$word/[a-zA-Z%-]*$"
+done
+# This guys require potentially more complex stuff like mail adresses in the url, or slashes
+for word in options confirm images
+do
+    regexList="$regexList,$path_url/$word/[a-zA-Z0-9%-%/%.%@]*$"
+done
 
-sudo /var/lib/mailman/bin/mmsitepass $adminPass
+# Set the regex in yunohost, later taken into account by ssowatconf
+[ "$is_public" -eq 0 ] || ynh_app_setting_set $app unprotected_regex $regexList
 
-sed -i "s@LIST_DOMAIN@$listPrefix.$domain@g"   ../conf/mm_cfg.py
-sed -i "s@WEB_DOMAIN_HOST@$domain@g"           ../conf/mm_cfg.py
-sed -i "s@WEB_DOMAIN_SUFFIX@$path@g"           ../conf/mm_cfg.py
-sed -i "s@MAILMAN_LANGUAGE@$mailmanLanguage@g" ../conf/mm_cfg.py
-sudo cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
+#=================================================
+# STANDARD MODIFICATIONS
+#=================================================
+# INSTALL DEPENDENCIES
+#=================================================
 
-# ################################################# #
-#  Create first list 'mailman'                      #
-#  and update aliases accordingly                   #
-# ################################################# #
+echo "mailman mailman/default_server_language select $language" | debconf-set-selections
+echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
+echo "mailman mailman/create_site_list select " | debconf-set-selections
+ynh_install_app_dependencies fcgiwrap mailman
 
-sudo newlist mailman root@$domain $adminPass <<< "\n"
-sudo /var/lib/mailman/bin/genaliases
+#=================================================
+# SET MAILMAN PASSWORD
+#=================================================
 
-# ################################################# #
-#  Fix mailman permissions                          #
-# ################################################# #
+/var/lib/mailman/bin/mmsitepass $admin_password
 
-sudo chown -hR list:list /var/lib/mailman/
-sudo /var/lib/mailman/bin/check_perms -f > /dev/null
+#=================================================
+# MAILMAN CONFIGURATION
+#=================================================
 
-#################################################### #
-#   Postfix configuration                            #
-#################################################### #
+# Generate conf file from template
+ynh_replace_string "__MAILMAN_DOMAIN__"   $domain   ../conf/mm_cfg.py
+ynh_replace_string "__MAILMAN_WEB_PATH__" $path_url ../conf/mm_cfg.py
+ynh_replace_string "__MAILMAN_LANGUAGE__" $language ../conf/mm_cfg.py
+cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
 
-# Backup existing postfix configuration
-sudo cp /etc/postfix/main.cf /etc/postfix/main.cf.beforeMailmanInstall
+# Create a first "mailman" list
+newlist mailman root@$domain $admin_password <<< "\n"
+/var/lib/mailman/bin/genaliases
 
-# Inspired from https://www.howtoforge.com/how-to-install-and-configure-mailman-with-postfix-on-debian-squeeze
+# Fix permissions
+chown -hR list:list /var/lib/mailman/
+/var/lib/mailman/bin/check_perms -f > /dev/null
 
-# Not sure what this does exactly, but okay
-sudo postconf -e "mailman_destination_recipient_limit = 1"
+#=================================================
+# TWEAKING ....
+#=================================================
 
-# Add the mailman aliases
-sudo postconf -e "alias_maps = hash:/etc/aliases, hash:/var/lib/mailman/data/aliases"
+# Custom template for listinfo
+cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
 
-# Include lists.domain as valid destination
-sudo postconf -e "relay_domains = $listPrefix.$domain"
-sudo postconf -e "mydestination = localhost, $listPrefix.$domain"
+# Tweak ugly footer, just say it's powered by mailman 2.1...
+sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "Powered by Mailman 2.1")/g' /var/lib/mailman/Mailman/htmlformat.py
 
-#  lists.domain should be handled by mailman
-sudo postconf -e "transport_maps = hash:/etc/postfix/transport"
-sudo touch /etc/postfix/transport
-sudo bash -c "echo $listPrefix.$domain mailman: >> /etc/postfix/transport"
-sudo postmap -v /etc/postfix/transport
+#=================================================
+# POSTFIX CONFIGURATION
+#=================================================
 
-####################################################
-#   Nginx configuration                            #
-####################################################
+# Add postfix configuration hook and regen postfix conf
+cp -R ../sources/hooks/conf_regen/98-postfix_mailman /usr/share/yunohost/hooks/conf_regen/
+yunohost service regen-conf postfix
 
-sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
 
-####################################################
-#   SSOWat configuration                           #
-####################################################
+# Create a dedicated nginx config
+ynh_add_nginx_config
 
-if [ "$is_public" = "Yes" ];
-then
+#=================================================
+# RESTART SERVICES
+#=================================================
 
-      # Build regex list, i.e. "/mailman/listinfo,/mailman/listinfo/[listnames]$,..."
-      regexList=$path/listinfo$
+yunohost app ssowatconf
 
-      for word in listinfo subscribe private roster
-      do
-              regexList="$regexList,$path/$word/[a-zA-Z%-]*$"
-      done
-      # This guys require potentially more complex stuff like mail adresses in the url, or slashes
-      for word in options confirm images
-      do
-              regexList="$regexList,$path/$word/[a-zA-Z0-9%-%/%.%@]*$"
-      done
-
-      # Set the regex in yunohost, later taken into account by ssowatconf
-      sudo yunohost app setting $app unprotected_regex -v $regexList
-fi
-
-
-
-
-# ################################################# #
-#  Restart services                                 #
-# ################################################# #
-
-sudo service mailman start
-sudo service postfix restart
-sudo service nginx   restart
-sudo yunohost app ssowatconf
-
+systemctl enable mailman >/dev/null 2>&1
+systemctl restart mailman
+systemctl restart postfix
+systemctl reload nginx

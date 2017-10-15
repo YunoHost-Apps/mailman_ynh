@@ -1,0 +1,75 @@
+#!/bin/bash
+
+#=================================================
+# GENERIC STARTING
+#=================================================
+
+# Generic helpers
+source /usr/share/yunohost/helpers
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get $app domain)
+path_url=$(ynh_app_setting_get $app path)
+language=$(ynh_app_setting_get $app language)
+
+#=================================================
+# CHECK IF THE APP CAN BE RESTORED
+#=================================================
+
+ynh_webpath_available $domain $path_url \
+    || ynh_die "Path not available: ${domain}${path_url}"
+
+#=================================================
+# INSTALL DEPENDENCIES
+#=================================================
+
+echo "mailman mailman/default_server_language select $language" | debconf-set-selections
+echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
+echo "mailman mailman/create_site_list select " | debconf-set-selections
+ynh_install_app_dependencies fcgiwrap mailman
+
+
+#=================================================
+# RESTORE THE NGINX AND MAILMAN CONFIGURATION
+#=================================================
+
+ynh_restore_file "/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
+ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
+    
+ynh_secure_remove "/etc/mailman"
+ynh_restore_file "/etc/mailman"
+
+for NAME in archives data lists qfiles spam
+do
+    ynh_secure_remove "/var/lib/mailman/$NAME"
+	ynh_restore_file "/var/lib/mailman/$NAME"
+done
+
+#=================================================
+# TWEAKING ....
+#=================================================
+
+# Tweak ugly footer, just say it's powered by mailman 2.1...
+sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "Powered by Mailman 2.1")/g' /var/lib/mailman/Mailman/htmlformat.py
+
+# Fix permissions
+chown -hR list:list /var/lib/mailman/
+/var/lib/mailman/bin/check_perms -f > /dev/null
+
+#=================================================
+# RESTART SERVICES
+#=================================================
+
+yunohost app ssowatconf
+
+systemctl enable mailman >/dev/null 2>&1
+systemctl restart mailman
+systemctl restart postfix
+systemctl reload nginx
