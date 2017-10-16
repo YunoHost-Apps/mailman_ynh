@@ -118,6 +118,11 @@ POSTFIX_STYLE_VIRTUAL_DOMAINS = [ '__MAILMAN_DOMAIN__' ]
 # didn't find it above, it's probably in /usr/lib/mailman/Mailman/Defaults.py.
 
 
+#-----------------------------------------------------------
+# We probably want to remove DKIM signatures as they won't be recognized
+# as valid....
+REMOVE_DKIM_HEADERS = Yes
+
 #-------------------------------------------------------------
 # Web page style configuration
 
