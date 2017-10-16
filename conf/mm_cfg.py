@@ -59,8 +59,8 @@ MAILMAN_SITE_LIST = 'mailman'
 # accordingly (Alias and ScriptAlias directives in most httpds)
 
 DEFAULT_URL_PATTERN = 'https://%s__MAILMAN_WEB_PATH__/'
-IMAGE_LOGOS         = '/mailman/images/'
-SITE_LOGO           = '/mailman/images/debianpowered.png'
+IMAGE_LOGOS         = '__MAILMAN_WEB_PATH__/images/'
+SITE_LOGO           = '__MAILMAN_WEB_PATH__/images/debianpowered.png'
 
 #-------------------------------------------------------------
 # Default domain for email addresses of newly created MLs
@@ -79,7 +79,7 @@ VIRTUAL_MAILMAN_LOCAL_DOMAIN = "localhost"
 
 #-------------------------------------------------------------
 # Path for archives
-PUBLIC_ARCHIVE_URL = 'https://%(hostname)s/mailman/archives/%(listname)s'
+PUBLIC_ARCHIVE_URL = 'https://%(hostname)s__MAILMAN_WEB_PATH__/archives/%(listname)s'
 
 #-------------------------------------------------------------
 # The default language for this server.

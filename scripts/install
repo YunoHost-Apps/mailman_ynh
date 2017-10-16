@@ -27,6 +27,8 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 
 app=$YNH_APP_INSTANCE_NAME
 
+path_url_slash_less=${path_url%/}
+
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
@@ -41,17 +43,18 @@ ynh_app_setting_set $app language  $language
 # SSOWAT CONFIGURATION
 #=================================================
 
-# Build regex list, i.e. "/mailman/listinfo,/mailman/listinfo/[listnames]$,..."
-regexList=$path_url/listinfo$
+# Build regex list, i.e. "domain.tld/mailman/listinfo,domain.tld/mailman/listinfo/[listnames]$,.."
+
+regexList="$domain$path_url_slash_less/listinfo$"
 
 for word in listinfo subscribe private roster archives
 do
-    regexList="$regexList,$path_url/$word/[a-zA-Z%-]*$"
+    regexList="$regexList,$domain$path_url_slash_less/$word/[a-zA-Z%-]*$"
 done
 # This guys require potentially more complex stuff like mail adresses in the url, or slashes
 for word in options confirm images
 do
-    regexList="$regexList,$path_url/$word/[a-zA-Z0-9%-%/%.%@]*$"
+    regexList="$regexList,$domain$path_url_slash_less/$word/[a-zA-Z0-9%-%/%.%@]*$"
 done
 
 # Set the regex in yunohost, later taken into account by ssowatconf
@@ -79,9 +82,9 @@ ynh_install_app_dependencies fcgiwrap mailman
 #=================================================
 
 # Generate conf file from template
-ynh_replace_string "__MAILMAN_DOMAIN__"   $domain   ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_WEB_PATH__" $path_url ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_LANGUAGE__" $language ../conf/mm_cfg.py
+ynh_replace_string "__MAILMAN_DOMAIN__"   "$domain"              ../conf/mm_cfg.py
+ynh_replace_string "__MAILMAN_WEB_PATH__" "$path_url_slash_less" ../conf/mm_cfg.py
+ynh_replace_string "__MAILMAN_LANGUAGE__" "$language"            ../conf/mm_cfg.py
 cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
 
 # Create a first "mailman" list
@@ -115,6 +118,7 @@ yunohost service regen-conf postfix
 #=================================================
 
 # Create a dedicated nginx config
+ynh_replace_string "__PATH__/" "$path_url_slash_less/" ../conf/nginx.conf
 ynh_add_nginx_config
 
 #=================================================
