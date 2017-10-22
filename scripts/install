@@ -94,6 +94,7 @@ newlist mailman root@$domain $admin_password <<< "\n"
 # Fix permissions
 chown -hR list:list /var/lib/mailman/
 /var/lib/mailman/bin/check_perms -f > /dev/null
+chown list:www-data -R /var/lib/mailman/archives/
 
 #=================================================
 # TWEAKING ....

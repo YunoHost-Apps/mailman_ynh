@@ -62,6 +62,7 @@ sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "
 # Fix permissions
 chown -hR list:list /var/lib/mailman/
 /var/lib/mailman/bin/check_perms -f > /dev/null
+chown list:www-data -R /var/lib/mailman/archives/
 
 #=================================================
 # RESTART SERVICES
