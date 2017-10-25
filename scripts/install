@@ -34,10 +34,10 @@ path_url_slash_less=${path_url%/}
 #=================================================
 
 # Register (book) web path
-ynh_webpath_register $app $domain $path_url
+ynh_webpath_register "$app" "$domain" "$path_url"
 
-ynh_app_setting_set $app is_public $is_public
-ynh_app_setting_set $app language  $language
+ynh_app_setting_set "$app" is_public "$is_public"
+ynh_app_setting_set "$app" language  "$language"
 
 #=================================================
 # SSOWAT CONFIGURATION
@@ -58,7 +58,7 @@ do
 done
 
 # Set the regex in yunohost, later taken into account by ssowatconf
-[ "$is_public" -eq 0 ] || ynh_app_setting_set $app unprotected_regex $regexList
+[ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_regex "$regexList"
 
 #=================================================
 # STANDARD MODIFICATIONS
@@ -75,7 +75,7 @@ ynh_install_app_dependencies fcgiwrap mailman
 # SET MAILMAN PASSWORD
 #=================================================
 
-/var/lib/mailman/bin/mmsitepass $admin_password
+/var/lib/mailman/bin/mmsitepass "$admin_password"
 
 #=================================================
 # MAILMAN CONFIGURATION
@@ -88,7 +88,7 @@ ynh_replace_string "__MAILMAN_LANGUAGE__" "$language"            ../conf/mm_cfg.
 cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
 
 # Create a first "mailman" list
-newlist mailman root@$domain $admin_password <<< "\n"
+newlist mailman "root@$domain" "$admin_password" <<< "\\n"
 /var/lib/mailman/bin/genaliases
 
 # Fix permissions

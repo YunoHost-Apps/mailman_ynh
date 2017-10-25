@@ -15,15 +15,15 @@ ynh_abort_if_errors
 #=================================================
 
 app=$YNH_APP_INSTANCE_NAME
-domain=$(ynh_app_setting_get $app domain)
-path_url=$(ynh_app_setting_get $app path)
-language=$(ynh_app_setting_get $app language)
+domain=$(ynh_app_setting_get "$app" domain)
+path_url=$(ynh_app_setting_get "$app" path)
+language=$(ynh_app_setting_get "$app" language)
 
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
 
-ynh_webpath_available $domain $path_url \
+ynh_webpath_available "$domain" "$path_url" \
     || ynh_die "Path not available: ${domain}${path_url}"
 
 #=================================================
