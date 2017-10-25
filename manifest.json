@@ -7,7 +7,8 @@
         "fr": "Logiciel libre pour gérer des listes de diffusion et newsletters."
     },
     "version": "2.1-2",
-    "licence": "GPLv2",
+    "license": "GPL-2.0",
+    "url": "https://code.launchpad.net/mailman",
     "maintainer": {
         "name": "Alex Aubin",
         "email": "alex.aubin@mailoo.org",
