@@ -2,3 +2,9 @@
 
 # No upgrade script provided
 
+#=================================================
+# MANAGE FAILURE OF THE SCRIPT
+#=================================================
+
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors

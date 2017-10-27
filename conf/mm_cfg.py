@@ -137,4 +137,8 @@ WEB_ALINK_COLOR = ''                              # If true, forces ALINK=
 WEB_VLINK_COLOR = ''                              # If true, forces VLINK=
 WEB_HIGHLIGHT_COLOR = '#f0f0f0'                   # If true, alternating rows
                                                   # in listinfo & admin display
+#-------------------------------------------------------------
+# User manangement
 
+MAILMAN_USER = 'list'
+MAILMAN_GROUP = 'list'
