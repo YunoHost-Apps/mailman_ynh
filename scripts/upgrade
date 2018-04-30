@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# No upgrade script provided
+source /usr/share/yunohost/helpers
 
 #=================================================
 # MANAGE FAILURE OF THE SCRIPT
@@ -8,3 +8,6 @@
 
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
+
+
+# No upgrade script provided
