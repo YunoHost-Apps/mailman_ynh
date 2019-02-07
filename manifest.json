@@ -58,6 +58,7 @@
     },
     {
         "name": "language",
+        "type": "string",
         "choices": ["en", "fr", "de", "it"],
         "default" : "en",
         "ask": {
