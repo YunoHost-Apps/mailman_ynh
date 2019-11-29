@@ -3,8 +3,8 @@
     "id": "mailman",
     "packaging_format": 1,
     "description": {
-        "en": "Free software for managing electronic mail discussion and e-newsletter lists.",
-        "fr": "Logiciel libre pour gérer des listes de diffusion et newsletters."
+        "en": "Manage electronic mail discussion and e-newsletter lists.",
+        "fr": "Gérez des listes de diffusion et newsletters."
     },
     "version": "2.1-2",
     "license": "GPL-2.0",
