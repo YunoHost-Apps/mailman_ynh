@@ -39,26 +39,6 @@ ynh_webpath_register "$app" "$domain" "$path_url"
 ynh_app_setting_set "$app" is_public "$is_public"
 ynh_app_setting_set "$app" language  "$language"
 
-#=================================================
-# SSOWAT CONFIGURATION
-#=================================================
-
-# Build regex list, i.e. "domain.tld/mailman/listinfo,domain.tld/mailman/listinfo/[listnames]$,.."
-
-regexList="$domain$path_url_slash_less/listinfo$"
-
-for word in listinfo subscribe private roster archives
-do
-    regexList="$regexList,$domain$path_url_slash_less/$word/[a-zA-Z%-]*$"
-done
-# This guys require potentially more complex stuff like mail adresses in the url, or slashes
-for word in options confirm images
-do
-    regexList="$regexList,$domain$path_url_slash_less/$word/[a-zA-Z0-9%-%/%.%@]*$"
-done
-
-# Set the regex in yunohost, later taken into account by ssowatconf
-[ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_regex "$regexList"
 
 #=================================================
 # STANDARD MODIFICATIONS
@@ -121,6 +101,16 @@ yunohost service regen-conf postfix
 # Create a dedicated nginx config
 ynh_replace_string "__PATH__/" "$path_url_slash_less/" ../conf/nginx.conf
 ynh_add_nginx_config
+
+#=================================================
+# SSOWAT CONFIGURATION
+#=================================================
+
+ynh_script_progression --message="Configuring SSOwat..."
+
+[ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
+ynh_app_setting_set "$app" protected_uris "/admin"
+
 
 #=================================================
 # RESTART SERVICES

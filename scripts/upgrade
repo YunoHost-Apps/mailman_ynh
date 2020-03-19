@@ -10,4 +10,16 @@ source /usr/share/yunohost/helpers
 ynh_abort_if_errors
 
 
-# No upgrade script provided
+app=$YNH_APP_INSTANCE_NAME
+is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+
+
+#=================================================
+# Fix legacy settings (old unprotected_regex)
+#=================================================
+
+ynh_app_setting_delete --app=$app --key=unprotected_regex
+
+[ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
+ynh_app_setting_set "$app" protected_uris "/admin"
+
