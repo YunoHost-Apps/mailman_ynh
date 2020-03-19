@@ -34,17 +34,20 @@ path_url_slash_less=${path_url%/}
 #=================================================
 
 # Register (book) web path
-ynh_webpath_register "$app" "$domain" "$path_url"
+ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 
-ynh_app_setting_set "$app" is_public "$is_public"
-ynh_app_setting_set "$app" language  "$language"
+ynh_script_progression --message="Storing installation settings..."
 
+ynh_app_setting_set --app=$app --key=is_public --value=$is_public
+ynh_app_setting_set --app=$app --key=language --value=$language
 
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================
 # INSTALL DEPENDENCIES
 #=================================================
+
+ynh_script_progression --message="Installing dependencies..."
 
 echo "mailman mailman/default_server_language select $language" | debconf-set-selections
 echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
@@ -54,6 +57,8 @@ ynh_install_app_dependencies fcgiwrap mailman
 #=================================================
 # SET MAILMAN PASSWORD
 #=================================================
+
+ynh_script_progression --message="Configuring mailman..."
 
 /var/lib/mailman/bin/mmsitepass "$admin_password"
 
@@ -90,6 +95,8 @@ sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "
 # POSTFIX CONFIGURATION
 #=================================================
 
+ynh_script_progression --message="Configuring postfix mail server..."
+
 # Add postfix configuration hook and regen postfix conf
 cp -R ../sources/hooks/conf_regen/98-postfix_mailman /usr/share/yunohost/hooks/conf_regen/
 yunohost service regen-conf postfix
@@ -97,6 +104,8 @@ yunohost service regen-conf postfix
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
+
+ynh_script_progression --message="Configuring nginx web server..."
 
 # Create a dedicated nginx config
 ynh_replace_string "__PATH__/" "$path_url_slash_less/" ../conf/nginx.conf
@@ -116,9 +125,9 @@ ynh_app_setting_set "$app" protected_uris "/admin"
 # RESTART SERVICES
 #=================================================
 
-yunohost app ssowatconf
+ynh_script_progression --message="Finalizing installation..."
 
-systemctl enable mailman >/dev/null 2>&1
-systemctl restart mailman
-systemctl restart postfix
-systemctl reload nginx
+ynh_systemd_action --service_name=mailman --action=enable
+ynh_systemd_action --service_name=mailman --action=restart
+ynh_systemd_action --service_name=postfix --action=restart
+ynh_systemd_action --service_name=nginx --action=reload
