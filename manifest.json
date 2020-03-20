@@ -6,7 +6,7 @@
         "en": "Manage electronic mail discussion and e-newsletter lists.",
         "fr": "Gérez des listes de diffusion et newsletters."
     },
-    "version": "2.1-2",
+    "version": "2.1-23~ynh1",
     "license": "GPL-2.0",
     "url": "https://code.launchpad.net/mailman",
     "maintainer": {
@@ -15,7 +15,7 @@
         "url": "https://github.com/alexAubin/"
     },
     "requirements": {
-        "yunohost": ">= 2.7.2"
+        "yunohost": ">= 3.6"
     },
     "multi_instance": false,
     "services": [
