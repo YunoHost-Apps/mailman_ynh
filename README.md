@@ -3,7 +3,7 @@ Mailman package for Yunohost
 
 ![](./doc/mailman-logo.jpg)
 
-[![Install Mailman with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=mailman)
+[![Install Mailman with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=mailman)
 
 ![](https://dash.yunohost.org/integration/mailman.svg)
 

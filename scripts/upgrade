@@ -146,7 +146,7 @@ chown list:www-data -R /var/lib/mailman/archives/
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..." --weight=1
 
-yunohost service add $app --description "Error log of mailman" --log "/var/log/$app/error"
+yunohost service add $app --description="Manage email discussion and e-newsletter lists" --log="/var/log/$app/error"
 
 #=================================================
 # START SYSTEMD SERVICE
