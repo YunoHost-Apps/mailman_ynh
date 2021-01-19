@@ -1,25 +1,188 @@
 #!/bin/bash
 
+#=================================================
+# GENERIC START
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE FAILURE OF THE SCRIPT
+# LOAD SETTINGS
+#=================================================
+ynh_script_progression --message="Loading installation settings..." --weight=1
+
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+language=$(ynh_app_setting_get --app=$app --key=language)
+
+#=================================================
+# CHECK VERSION
 #=================================================
 
+### This helper will compare the version of the currently installed app and the version of the upstream package.
+### $upgrade_type can have 2 different values
+### - UPGRADE_APP if the upstream app version has changed
+### - UPGRADE_PACKAGE if only the YunoHost package has changed
+### ynh_check_app_version_changed will stop the upgrade if the app is up to date.
+### UPGRADE_APP should be used to upgrade the core app only if there's an upgrade to do.
+upgrade_type=$(ynh_check_app_version_changed)
+
+#=================================================
+# ENSURE DOWNWARD COMPATIBILITY
+#=================================================
+ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+
+# Fix is_public as a boolean value
+if [ "$is_public" = "Yes" ]; then
+	ynh_app_setting_set --app=$app --key=is_public --value=1
+	is_public=1
+elif [ "$is_public" = "No" ]; then
+	ynh_app_setting_set --app=$app --key=is_public --value=0
+	is_public=0
+fi
+
+
+#=================================================
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+#=================================================
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=1
+
+# Backup the current version of the app
+ynh_backup_before_upgrade
+ynh_clean_setup () {
+	# restore it if the upgrade fails
+	ynh_restore_upgradebackup
+}
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
+#=================================================
+# CHECK THE PATH
+#=================================================
 
-app=$YNH_APP_INSTANCE_NAME
-is_public=$(ynh_app_setting_get --app=$app --key=is_public)
+path_url=$(ynh_normalize_url_path --path_url=$path_url)
+
+#=================================================
+# STANDARD UPGRADE STEPS
+#=================================================
+# STOP SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Stopping a systemd service..." --weight=1
+
+ynh_systemd_action --service_name=$app --action="stop"
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=1
+
+# Create a dedicated nginx config
+ynh_add_nginx_config
+
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
+
+# Create a dedicated user (if not existing)
+ynh_system_user_create --username="list"
+
+#=================================================
+# SPECIFIC UPGRADE
+#=================================================
+# TWEAKING ....
+#=================================================
+ynh_script_progression --message="Add YunoHost specific theme..." --weight=1
+
+# Custom template for listinfo
+cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
+
+#=================================================
+# POSTFIX CONFIGURATION
+#=================================================
+
+ynh_script_progression --message="Configuring postfix mail server..."
+
+# Add postfix configuration hook and regen postfix conf
+cp -R ../sources/hooks/conf_regen/98-postfix_mailman /usr/share/yunohost/hooks/conf_regen/
+yunohost tools regen-conf postfix
+
+#=================================================
+
+#=================================================
+# MODIFY A CONFIG FILE
+#=================================================
+ynh_script_progression --message="Upgrading mailman configuration file..." --weight=1
+
+### Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
+### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
+ynh_backup_if_checksum_is_different --file="/etc/mailman/mm_cfg.py"
+
+ynh_replace_string "__MAILMAN_DOMAIN__"   "$domain"              ../conf/mm_cfg.py
+ynh_replace_string "__MAILMAN_WEB_PATH__" "$path_url" ../conf/mm_cfg.py
+ynh_replace_string "__MAILMAN_LANGUAGE__" "$language"            ../conf/mm_cfg.py
+cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
+
+# Recalculate and store the checksum of the file for the next upgrade.
+ynh_store_file_checksum --file="/etc/mailman/mm_cfg.py"
+
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+# SECURE FILES AND DIRECTORIES
+#=================================================
+
+# Set permissions on app files
+chown -hR list:list /var/lib/mailman/
+/var/lib/mailman/bin/check_perms -f > /dev/null
+chown list:www-data -R /var/lib/mailman/archives/
+
+#=================================================
+# INTEGRATE SERVICE IN YUNOHOST
+#=================================================
+ynh_script_progression --message="Integrating service in YunoHost..." --weight=1
+
+yunohost service add $app --description="Manage email discussion and e-newsletter lists" --log="/var/log/$app/error"
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Starting a systemd service..." --weight=1
+
+ynh_systemd_action --service_name=$app --action="start"
 
 
 #=================================================
+# SETUP SSOWAT
+#=================================================
+ynh_script_progression --message="Upgrading SSOwat configuration..." --weight=1
+
 # Fix legacy settings (old unprotected_regex)
-#=================================================
-
 ynh_app_setting_delete --app=$app --key=unprotected_regex
 
-[ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
+# Make app public if necessary
+if [ $is_public -eq 1 ]
+then
+	# unprotected_uris allows SSO credentials to be passed anyway
+	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
+fi
 ynh_app_setting_set "$app" protected_uris "/admin"
 
+#=================================================
+# RELOAD SERVICES
+#=================================================
+ynh_script_progression --message="Reloading services..." --weight=1
+
+ynh_systemd_action --service_name=$app --action=reload
+ynh_systemd_action --service_name=postfix --action=reload
+ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Upgrade of $app completed" --last

@@ -65,6 +65,13 @@ chown -hR list:list /var/lib/mailman/
 chown list:www-data -R /var/lib/mailman/archives/
 
 #=================================================
+# INTEGRATE SERVICE IN YUNOHOST
+#=================================================
+ynh_script_progression --message="Integrating service in YunoHost..." --weight=1
+
+yunohost service add $app --description="Manage email discussion and e-newsletter lists" --log="/var/log/$app/error"
+
+#=================================================
 # RESTART SERVICES
 #=================================================
 
