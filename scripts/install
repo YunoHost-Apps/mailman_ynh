@@ -99,7 +99,7 @@ ynh_script_progression --message="Configuring postfix mail server..."
 
 # Add postfix configuration hook and regen postfix conf
 cp -R ../sources/hooks/conf_regen/98-postfix_mailman /usr/share/yunohost/hooks/conf_regen/
-yunohost service regen-conf postfix
+yunohost tools regen-conf postfix
 
 #=================================================
 # NGINX CONFIGURATION

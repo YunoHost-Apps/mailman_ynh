@@ -45,7 +45,6 @@ elif [ "$is_public" = "No" ]; then
 	is_public=0
 fi
 
-
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
@@ -61,12 +60,6 @@ ynh_clean_setup () {
 ynh_abort_if_errors
 
 #=================================================
-# CHECK THE PATH
-#=================================================
-
-path_url=$(ynh_normalize_url_path --path_url=$path_url)
-
-#=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
 # STOP SYSTEMD SERVICE
@@ -74,6 +67,17 @@ path_url=$(ynh_normalize_url_path --path_url=$path_url)
 ynh_script_progression --message="Stopping a systemd service..." --weight=1
 
 ynh_systemd_action --service_name=$app --action="stop"
+
+#=================================================
+# INSTALL DEPENDENCIES
+#=================================================
+
+ynh_script_progression --message="Installing dependencies..."
+
+echo "mailman mailman/default_server_language select $language" | debconf-set-selections
+echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
+echo "mailman mailman/create_site_list select " | debconf-set-selections
+ynh_install_app_dependencies fcgiwrap mailman
 
 #=================================================
 # NGINX CONFIGURATION
