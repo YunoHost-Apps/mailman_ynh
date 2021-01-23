@@ -154,22 +154,6 @@ ynh_script_progression --message="Starting a systemd service..." --weight=1
 ynh_systemd_action --service_name=$app --action="start"
 
 #=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..." --weight=1
-
-# Fix legacy settings (old unprotected_regex)
-ynh_app_setting_delete --app=$app --key=unprotected_regex
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# unprotected_uris allows SSO credentials to be passed anyway
-	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-fi
-ynh_app_setting_set "$app" protected_uris "/admin"
-
-#=================================================
 # RELOAD SERVICES
 #=================================================
 ynh_script_progression --message="Reloading services..." --weight=1
