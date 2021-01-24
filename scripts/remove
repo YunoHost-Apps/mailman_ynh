@@ -13,13 +13,24 @@ app=$YNH_APP_INSTANCE_NAME
 domain=$(ynh_app_setting_get "$app" domain)
 
 #=================================================
+# REMOVE SERVICE INTEGRATION IN YUNOHOST
+#=================================================
+
+# Remove the service from the list of services known by YunoHost (added from `yunohost service add`)
+if ynh_exec_warn_less yunohost service status $app >/dev/null
+then
+	ynh_script_progression --message="Removing $app service integration..."
+	yunohost service remove $app
+fi
+
+#=================================================
 # STANDARD REMOVE
 #=================================================
 # REMOVE DEPENDENCIES
 #=================================================
 
 ynh_remove_app_dependencies
-apt-get remove mailman --purge
+#apt-get remove mailman --purge
 
 #=================================================
 # REMOVE REMAINING FILES
@@ -41,6 +52,6 @@ ynh_remove_nginx_config
 # RELOAD SERVICES / CONF
 #=================================================
 
-yunohost service regen-conf postfix
+yunohost tools regen-conf postfix
 ynh_systemd_action --service_name=postfix --action=restart
 ynh_systemd_action --service_name=nginx --action=reload

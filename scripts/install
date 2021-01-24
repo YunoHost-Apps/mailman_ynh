@@ -58,7 +58,7 @@ ynh_install_app_dependencies fcgiwrap mailman
 # SET MAILMAN PASSWORD
 #=================================================
 
-ynh_script_progression --message="Configuring mailman..."
+ynh_script_progression --message="Configuring Mailman..."
 
 /var/lib/mailman/bin/mmsitepass "$admin_password"
 
@@ -88,7 +88,7 @@ chown list:www-data -R /var/lib/mailman/archives/
 # Custom template for listinfo
 cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
 
-# Tweak ugly footer, just say it's powered by mailman 2.1...
+# Tweak ugly footer, just say it's powered by Mailman 2.1...
 sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "Powered by Mailman 2.1")/g' /var/lib/mailman/Mailman/htmlformat.py
 
 #=================================================
@@ -99,7 +99,7 @@ ynh_script_progression --message="Configuring postfix mail server..."
 
 # Add postfix configuration hook and regen postfix conf
 cp -R ../sources/hooks/conf_regen/98-postfix_mailman /usr/share/yunohost/hooks/conf_regen/
-yunohost service regen-conf postfix
+yunohost tools regen-conf postfix
 
 #=================================================
 # NGINX CONFIGURATION
@@ -126,7 +126,6 @@ ynh_script_progression --message="Configuring SSOwat..."
 
 [ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
 ynh_app_setting_set "$app" protected_uris "/admin"
-
 
 #=================================================
 # RESTART SERVICES
