@@ -35,7 +35,6 @@ echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selec
 echo "mailman mailman/create_site_list select " | debconf-set-selections
 ynh_install_app_dependencies fcgiwrap mailman
 
-
 #=================================================
 # RESTORE THE NGINX AND MAILMAN CONFIGURATION
 #=================================================
