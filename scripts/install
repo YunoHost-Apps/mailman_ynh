@@ -38,7 +38,6 @@ ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 
 ynh_script_progression --message="Storing installation settings..."
 
-ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 ynh_app_setting_set --app=$app --key=language --value=$language
 
 #=================================================
@@ -124,8 +123,8 @@ yunohost service add $app --description="Manage email discussion and e-newslette
 
 ynh_script_progression --message="Configuring SSOwat..."
 
-[ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
-ynh_app_setting_set "$app" protected_uris "/admin"
+
+
 
 #=================================================
 # RESTART SERVICES
