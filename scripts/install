@@ -36,9 +36,11 @@ path_url_slash_less=${path_url%/}
 # Register (book) web path
 ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 
-ynh_script_progression --message="Storing installation settings..."
+#=================================================
+# STORE SETTINGS FROM MANIFEST
+#=================================================
+ynh_script_progression --message="Storing installation settings..." --weight=1
 
-ynh_app_setting_set --app=$app --key=is_public --value=$is_public
 ynh_app_setting_set --app=$app --key=language --value=$language
 
 #=================================================
@@ -46,7 +48,6 @@ ynh_app_setting_set --app=$app --key=language --value=$language
 #=================================================
 # INSTALL DEPENDENCIES
 #=================================================
-
 ynh_script_progression --message="Installing dependencies..."
 
 echo "mailman mailman/default_server_language select $language" | debconf-set-selections
@@ -57,7 +58,6 @@ ynh_install_app_dependencies fcgiwrap mailman
 #=================================================
 # SET MAILMAN PASSWORD
 #=================================================
-
 ynh_script_progression --message="Configuring Mailman..."
 
 /var/lib/mailman/bin/mmsitepass "$admin_password"
@@ -67,10 +67,7 @@ ynh_script_progression --message="Configuring Mailman..."
 #=================================================
 
 # Generate conf file from template
-ynh_replace_string "__MAILMAN_DOMAIN__"   "$domain"              ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_WEB_PATH__" "$path_url_slash_less" ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_LANGUAGE__" "$language"            ../conf/mm_cfg.py
-cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
+ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
 
 # Create a first "mailman" list
 newlist mailman "root@$domain" "$admin_password" <<< "\\n"
@@ -104,8 +101,7 @@ yunohost tools regen-conf postfix
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-
-ynh_script_progression --message="Configuring nginx web server..."
+ynh_script_progression --message="Configuring NGINX web server..."
 
 # Create a dedicated nginx config
 ynh_replace_string "__PATH__/" "$path_url_slash_less/" ../conf/nginx.conf
@@ -121,11 +117,21 @@ yunohost service add $app --description="Manage email discussion and e-newslette
 #=================================================
 # SSOWAT CONFIGURATION
 #=================================================
+ynh_script_progression --message="Configuring permissions..." --weight=1
 
-ynh_script_progression --message="Configuring SSOwat..."
+# Make app public if necessary
+if [ $is_public -eq 1 ]
+then
+	# Everyone can access the app.
+	# The "main" permission is automatically created before the install script.
+	ynh_permission_update --permission="main" --add="visitors"
+fi
 
-[ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
-ynh_app_setting_set "$app" protected_uris "/admin"
+ynh_permission_create --permission="admin" --url="/admin" --allowed=$admin
+
+
+# [ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
+# ynh_app_setting_set "$app" protected_uris "/admin"
 
 #=================================================
 # RESTART SERVICES
@@ -137,3 +143,9 @@ ynh_systemd_action --service_name=mailman --action=enable
 ynh_systemd_action --service_name=mailman --action=restart
 ynh_systemd_action --service_name=postfix --action=restart
 ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Installation of $app completed" --last

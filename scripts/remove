@@ -55,3 +55,9 @@ ynh_remove_nginx_config
 yunohost tools regen-conf postfix
 ynh_systemd_action --service_name=postfix --action=restart
 ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Removal of $app completed" --last

@@ -114,19 +114,9 @@ yunohost tools regen-conf postfix
 #=================================================
 # MODIFY A CONFIG FILE
 #=================================================
-ynh_script_progression --message="Upgrading mailman configuration file..." --weight=1
+ynh_script_progression --message="Upgrading Mailman configuration file..." --weight=1
 
-### Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
-ynh_backup_if_checksum_is_different --file="/etc/mailman/mm_cfg.py"
-
-ynh_replace_string "__MAILMAN_DOMAIN__"   "$domain"              ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_WEB_PATH__" "$path_url" ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_LANGUAGE__" "$language"            ../conf/mm_cfg.py
-cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
-
-# Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum --file="/etc/mailman/mm_cfg.py"
+ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
 
 #=================================================
 # GENERIC FINALIZATION

@@ -15,7 +15,7 @@
         "url": "https://github.com/alexAubin/"
     },
     "requirements": {
-        "yunohost": ">= 4.0"
+        "yunohost": ">= 4.1.7"
     },
     "multi_instance": false,
     "services": [
@@ -27,10 +27,6 @@
             {
                 "name": "domain",
                 "type": "domain",
-                "ask": {
-                    "en": "Choose a domain for Mailman",
-                    "fr": "Choisissez un nom de domaine pour Mailman"
-                },
                 "help": {
                     "en": "This will be the domain on which mailing lists will run",
                     "fr": "Ce sera le domaine sur lequel les listes de diffusion seront exécutées"
@@ -40,10 +36,6 @@
             {
                 "name": "path",
                 "type": "path",
-                "ask": {
-                    "en": "Choose a path for Mailman",
-                    "fr": "Choisissez un chemin pour Mailman"
-                },
                 "help": {
                     "en": "The web interface for mailman will be accessible at domain.tld/path",
                     "fr": "L'interface Web de mailman sera accessible dans domain.tld/path"
@@ -77,10 +69,6 @@
             {
                 "name": "is_public",
                 "type": "boolean",
-                "ask": {
-                    "en": "Make the web interface public?",
-                    "fr": "Rendre l'interface Web publique ?"
-            },
                 "default": true
             }
         ]

@@ -33,8 +33,8 @@ Can the app be used by multiple users?
 
 #### Supported architectures
 
-* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/mailman%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/mailman/)
-* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/mailman%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/mailman/)
+* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/mailman.svg)](https://ci-apps.yunohost.org/ci/apps/mailman/)
+* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/mailman.svg)](https://ci-apps-arm.yunohost.org/ci/apps/mailman/)
 
 ## Limitations
 
