@@ -127,7 +127,7 @@ then
 	ynh_permission_update --permission="main" --add="visitors"
 fi
 
-ynh_permission_create --permission="admin" --url="/admin" --allowed=$admin
+ynh_permission_create --permission="admin" --url="/admin" #--allowed=$admin
 
 
 # [ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
