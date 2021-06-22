@@ -24,10 +24,9 @@ path_url=$YNH_APP_ARG_PATH
 admin_password=$YNH_APP_ARG_ADMIN_PASSWORD
 language=$YNH_APP_ARG_LANGUAGE
 is_public=$YNH_APP_ARG_IS_PUBLIC
+path_url_slash_less=${path_url%/}
 
 app=$YNH_APP_INSTANCE_NAME
-
-path_url_slash_less=${path_url%/}
 
 #=================================================
 # STORE SETTINGS FROM MANIFEST
@@ -53,6 +52,7 @@ ynh_script_progression --message="Installing dependencies..."
 echo "mailman mailman/default_server_language select $language" | debconf-set-selections
 echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
 echo "mailman mailman/create_site_list select " | debconf-set-selections
+
 ynh_install_app_dependencies fcgiwrap mailman
 
 #=================================================
@@ -91,7 +91,6 @@ sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "
 #=================================================
 # POSTFIX CONFIGURATION
 #=================================================
-
 ynh_script_progression --message="Configuring postfix mail server..."
 
 # Add postfix configuration hook and regen postfix conf
