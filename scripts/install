@@ -21,7 +21,7 @@ ynh_abort_if_errors
 
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
-admin_password=$YNH_APP_ARG_ADMIN_PASSWORD
+password=$YNH_APP_ARG_PASSWORD
 language=$YNH_APP_ARG_LANGUAGE
 is_public=$YNH_APP_ARG_IS_PUBLIC
 path_url_slash_less=${path_url%/}
@@ -60,7 +60,7 @@ ynh_install_app_dependencies fcgiwrap mailman
 #=================================================
 ynh_script_progression --message="Configuring Mailman..."
 
-/var/lib/mailman/bin/mmsitepass "$admin_password"
+/var/lib/mailman/bin/mmsitepass "$password"
 
 #=================================================
 # MAILMAN CONFIGURATION
@@ -70,7 +70,7 @@ ynh_script_progression --message="Configuring Mailman..."
 ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
 
 # Create a first "mailman" list
-newlist mailman "root@$domain" "$admin_password" <<< "\\n"
+newlist mailman "root@$domain" "$password" <<< "\\n"
 /var/lib/mailman/bin/genaliases
 
 # Fix permissions

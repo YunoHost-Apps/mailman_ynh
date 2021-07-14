@@ -27,24 +27,16 @@
             {
                 "name": "domain",
                 "type": "domain",
-                "help": {
-                    "en": "This will be the domain on which mailing lists will run",
-                    "fr": "Ce sera le domaine sur lequel les listes de diffusion seront exécutées"
-                },
                 "example": "example.com"
             },
             {
                 "name": "path",
                 "type": "path",
-                "help": {
-                    "en": "The web interface for mailman will be accessible at domain.tld/path",
-                    "fr": "L'interface Web de mailman sera accessible dans domain.tld/path"
-                },
                 "example": "/mailman, /lists",
                 "default": "/mailman"
             },
             {
-                "name": "admin_password",
+                "name": "password",
                 "type": "password",
                 "ask": {
                     "en": "Choose a Mailman administration password",
@@ -63,8 +55,8 @@
                     "en": "Choose a default language for Mailman",
                     "fr": "Choisissez la langue de Mailman"
             },
-                "choices": ["de", "en_GB", "fr", "it", "pt"],
-                "default" : "en_GB"
+                "choices": ["de", "en", "fr", "it", "pt"],
+                "default" : "en"
             },
             {
                 "name": "is_public",
