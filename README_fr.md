@@ -11,7 +11,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 ## Vue d'ensemble
 
-Gérez des listes de diffusion et newsletters.
+Gérez des listes de diffusion et newsletters
 
 **Version incluse :** 2.1.29-1~ynh2
 

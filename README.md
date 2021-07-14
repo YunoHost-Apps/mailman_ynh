@@ -15,7 +15,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 ## Overview
 
-Manage email discussion and e-newsletter lists.
+Manage email discussion and e-newsletter lists
 
 **Shipped version:** 2.1.29-1~ynh2
 
