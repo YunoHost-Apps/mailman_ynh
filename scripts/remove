@@ -10,7 +10,7 @@ source /usr/share/yunohost/helpers
 
 app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get "$app" domain)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
 
 #=================================================
 # REMOVE SERVICE INTEGRATION IN YUNOHOST
@@ -28,23 +28,24 @@ fi
 #=================================================
 # REMOVE DEPENDENCIES
 #=================================================
+ynh_script_progression --message="Removing dependencies..." --weight=1
 
 ynh_remove_app_dependencies
-#apt-get remove mailman --purge
 
 #=================================================
 # REMOVE REMAINING FILES
 #=================================================
 
 # We need to remove this otherwise mailman will do some shit when reinstalling
-ynh_secure_remove "/var/lib/mailman"
+ynh_secure_remove --file="/var/lib/mailman"
 
 # Remove hook for postfix conf
-ynh_secure_remove "/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
+ynh_secure_remove --file="/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
 
 #=================================================
 # REMOVE THE NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Removing NGINX web server configuration..." --weight=1
 
 ynh_remove_nginx_config
 

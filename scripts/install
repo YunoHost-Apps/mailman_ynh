@@ -135,8 +135,7 @@ ynh_permission_create --permission="admin" --url="/admin" #--allowed=$admin
 #=================================================
 # RESTART SERVICES
 #=================================================
-
-ynh_script_progression --message="Finalizing installation..."
+ynh_script_progression --message="Finalizing installation..." --weight=1
 
 ynh_systemd_action --service_name=mailman --action=enable
 ynh_systemd_action --service_name=mailman --action=restart
