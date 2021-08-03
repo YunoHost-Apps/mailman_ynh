@@ -1,17 +1,25 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC STARTING
+# GENERIC START
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
+source _common.sh
 source /usr/share/yunohost/helpers
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+ynh_script_progression --message="Loading installation settings..."
 
 app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 
+#=================================================
+# STANDARD REMOVE
 #=================================================
 # REMOVE SERVICE INTEGRATION IN YUNOHOST
 #=================================================
@@ -24,17 +32,27 @@ then
 fi
 
 #=================================================
-# STANDARD REMOVE
-#=================================================
 # REMOVE DEPENDENCIES
 #=================================================
 ynh_script_progression --message="Removing dependencies..." --weight=1
 
+# Remove metapackage and its dependencies
 ynh_remove_app_dependencies
 
 #=================================================
-# REMOVE REMAINING FILES
+# REMOVE NGINX CONFIGURATION
 #=================================================
+ynh_script_progression --message="Removing NGINX web server configuration..." --weight=1
+
+# Remove the dedicated NGINX config
+ynh_remove_nginx_config
+
+#=================================================
+# SPECIFIC REMOVE
+#=================================================
+# REMOVE VARIOUS FILES
+#=================================================
+ynh_script_progression --message="Removing various files..."
 
 # We need to remove this otherwise mailman will do some shit when reinstalling
 ynh_secure_remove --file="/var/lib/mailman"
@@ -43,18 +61,18 @@ ynh_secure_remove --file="/var/lib/mailman"
 ynh_secure_remove --file="/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
 
 #=================================================
-# REMOVE THE NGINX CONFIGURATION
+# RELOAD SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Removing NGINX web server configuration..." --weight=1
-
-ynh_remove_nginx_config
-
-#=================================================
-# RELOAD SERVICES / CONF
-#=================================================
+ynh_script_progression --message="Reloading a systemd service..."
 
 yunohost tools regen-conf postfix
 ynh_systemd_action --service_name=postfix --action=restart
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
+
 ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================

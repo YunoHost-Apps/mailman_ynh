@@ -23,10 +23,11 @@ language=$(ynh_app_setting_get --app=$app --key=language)
 #=================================================
 # CHECK VERSION
 #=================================================
+ynh_script_progression --message="Checking version..."
 
 upgrade_type=$(ynh_check_app_version_changed)
 
-#==============================================
+#=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
 ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=1
@@ -34,12 +35,14 @@ ynh_script_progression --message="Backing up the app before upgrading (may take 
 # Backup the current version of the app
 ynh_backup_before_upgrade
 ynh_clean_setup () {
-	# restore it if the upgrade fails
+	# Restore it if the upgrade fails
 	ynh_restore_upgradebackup
 }
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
+#=================================================
+# STANDARD UPGRADE STEPS
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
@@ -65,31 +68,31 @@ if ! ynh_permission_exists --permission="admin"; then
 fi
 
 #=================================================
-# INSTALL DEPENDENCIES
-#=================================================
-
-ynh_script_progression --message="Installing dependencies..."
-
-echo "mailman mailman/default_server_language select $language" | debconf-set-selections
-echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
-echo "mailman mailman/create_site_list select " | debconf-set-selections
-ynh_install_app_dependencies fcgiwrap mailman
-
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
-
-# Create a dedicated nginx config
-ynh_add_nginx_config
-
-#=================================================
 # CREATE DEDICATED USER
 #=================================================
 ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
 
 # Create a dedicated user (if not existing)
 ynh_system_user_create --username="list"
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
+
+# Create a dedicated NGINX config
+ynh_add_nginx_config
+
+#=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Upgrading dependencies..."
+
+echo "mailman mailman/default_server_language select $language" | debconf-set-selections
+echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
+echo "mailman mailman/create_site_list select " | debconf-set-selections
+
+ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # SPECIFIC UPGRADE
@@ -104,7 +107,6 @@ cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
 #=================================================
 # POSTFIX CONFIGURATION
 #=================================================
-
 ynh_script_progression --message="Configuring postfix mail server..."
 
 # Add postfix configuration hook and regen postfix conf
@@ -112,11 +114,9 @@ cp -R ../sources/hooks/conf_regen/98-postfix_mailman /usr/share/yunohost/hooks/c
 yunohost tools regen-conf postfix
 
 #=================================================
-
+# UPDATE A CONFIG FILE
 #=================================================
-# MODIFY A CONFIG FILE
-#=================================================
-ynh_script_progression --message="Upgrading Mailman configuration file..." --weight=1
+ynh_script_progression --message="Updating a configuration file..." --weight=1
 
 ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
 
@@ -144,14 +144,13 @@ yunohost service add $app --description="Manage email discussion and e-newslette
 ynh_script_progression --message="Starting a systemd service..." --weight=1
 
 ynh_systemd_action --service_name=$app --action="start"
-
-#=================================================
-# RELOAD SERVICES
-#=================================================
-ynh_script_progression --message="Reloading services..." --weight=1
-
-ynh_systemd_action --service_name=$app --action=reload
 ynh_systemd_action --service_name=postfix --action=reload
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
+
 ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================

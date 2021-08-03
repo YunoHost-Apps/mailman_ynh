@@ -7,8 +7,14 @@
         "fr": "Gérez des listes de diffusion et newsletters"
     },
     "version": "2.1.29-1~ynh2",
-    "license": "GPL-2.0",
     "url": "https://code.launchpad.net/mailman",
+    "upstream": {
+        "license": "GPL-2.0",
+        "website": "http://www.list.org/",
+        "userdoc": "https://yunohost.org/app_mailman",
+        "code": "https://code.launchpad.net/mailman"
+    },
+    "license": "GPL-2.0",
     "maintainer": {
         "name": "alexAubin",
         "email": "alex.aubin@mailoo.org",
@@ -36,32 +42,28 @@
                 "default": "/mailman"
             },
             {
-                "name": "password",
-                "type": "password",
-                "ask": {
-                    "en": "Choose a Mailman administration password",
-                    "fr": "Choisissez un mot de passe d'administration Mailman"
-            },
-                "help": {
-                    "en": "It will be needed to create and administrate lists. Be careful though: this password will be stored in clear on the disk :/ ...",
-                    "fr": "Il sera nécessaire pour créer et administrer des listes. Attention cependant : ce mot de passe sera stocké en clair sur le disque: / ..."
-                },
-                "example": "Choose a password"
+                "name": "is_public",
+                "type": "boolean",
+                "default": true
             },
             {
                 "name": "language",
                 "type": "string",
                 "ask": {
-                    "en": "Choose a default language for Mailman",
-                    "fr": "Choisissez la langue de Mailman"
-            },
+                    "en": "Choose the application language",
+                    "fr": "Choisissez la langue de l'application"
+                },
                 "choices": ["de", "en", "fr", "it", "pt"],
-                "default" : "en"
+                "default": "en"
             },
             {
-                "name": "is_public",
-                "type": "boolean",
-                "default": true
+                "name": "password",
+                "type": "password",
+                "help": {
+                    "en": "It will be needed to create and administrate lists. Be careful though: this password will be stored in clear on the disk :/ ...",
+                    "fr": "Il sera nécessaire pour créer et administrer des listes. Attention cependant : ce mot de passe sera stocké en clair sur le disque: / ..."
+                },
+                "example": "Choose a password"
             }
         ]
     }
