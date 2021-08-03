@@ -29,6 +29,9 @@ How to configure this app: From an admin panel, a plain file with SSH, or any ot
 
 ## Documentations et ressources
 
+* Site officiel de l'app : http://www.list.org/
+* Documentation officielle utilisateur : https://yunohost.org/app_mailman
+* Dépôt de code officiel de l'app : https://code.launchpad.net/mailman
 * Documentation YunoHost pour cette app : https://yunohost.org/app_mailman
 * Signaler un bug : https://github.com/YunoHost-Apps/mailman_ynh/issues
 
