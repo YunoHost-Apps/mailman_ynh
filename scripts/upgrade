@@ -64,7 +64,7 @@ fi
 
 if ! ynh_permission_exists --permission="admin"; then
 	# Create the required permissions
-	ynh_permission_create --permission="admin" --url="/admin" --allowed=$admin
+	ynh_permission_create --permission="admin" --url="/admin"
 fi
 
 #=================================================
