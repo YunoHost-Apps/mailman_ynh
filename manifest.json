@@ -36,6 +36,11 @@
                 "default": "/mailman"
             },
             {
+                "name": "admin",
+                "type": "user",
+                "example": "johndoe"
+            },
+            {
                 "name": "password",
                 "type": "password",
                 "ask": {

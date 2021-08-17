@@ -19,6 +19,7 @@ app=$YNH_APP_INSTANCE_NAME
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
 language=$(ynh_app_setting_get --app=$app --key=language)
+admin=$(ynh_app_setting_get --app=$app --key=admin)
 
 #=================================================
 # CHECK VERSION
@@ -51,6 +52,11 @@ ynh_systemd_action --service_name=$app --action="stop"
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+
+# If the admin is not defined, We can't upgrade this app
+if [ -z "$admin" ]; then
+	ynh_die --message="This app can't be upgraded from a very old version of the package. Please remove and reinstall Mailman"
+fi
 
 # Cleaning legacy permissions
 if ynh_legacy_permissions_exists; then
