@@ -6,48 +6,38 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
+source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --weight=1
+ynh_script_progression --message="Loading installation settings..."
 
 app=$YNH_APP_INSTANCE_NAME
+
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
-is_public=$(ynh_app_setting_get --app=$app --key=is_public)
 language=$(ynh_app_setting_get --app=$app --key=language)
+
+path_url_slash_less=${path_url%/}
 
 #=================================================
 # CHECK VERSION
 #=================================================
+ynh_script_progression --message="Checking version..."
 
 upgrade_type=$(ynh_check_app_version_changed)
 
 #=================================================
-# ENSURE DOWNWARD COMPATIBILITY
-#=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
-
-# Fix is_public as a boolean value
-if [ "$is_public" = "Yes" ]; then
-	ynh_app_setting_set --app=$app --key=is_public --value=1
-	is_public=1
-elif [ "$is_public" = "No" ]; then
-	ynh_app_setting_set --app=$app --key=is_public --value=0
-	is_public=0
-fi
-
-#=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=1
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..."
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
 ynh_clean_setup () {
-	# restore it if the upgrade fails
+	# Restore it if the upgrade fails
 	ynh_restore_upgradebackup
 }
 # Exit if an error occurs during the execution of the script
@@ -58,36 +48,39 @@ ynh_abort_if_errors
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping a systemd service..." --weight=1
+ynh_script_progression --message="Stopping a systemd service..."
 
 ynh_systemd_action --service_name=$app --action="stop"
 
 #=================================================
-# INSTALL DEPENDENCIES
+# ENSURE DOWNWARD COMPATIBILITY
 #=================================================
+ynh_script_progression --message="Ensuring downward compatibility..."
 
-ynh_script_progression --message="Installing dependencies..."
+# Cleaning legacy permissions
+if ynh_legacy_permissions_exists; then
+	ynh_legacy_permissions_delete_all
 
-echo "mailman mailman/default_server_language select $language" | debconf-set-selections
-echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
-echo "mailman mailman/create_site_list select " | debconf-set-selections
-ynh_install_app_dependencies fcgiwrap mailman
+	ynh_app_setting_delete --app=$app --key=is_public
+fi
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=1
+ynh_script_progression --message="Upgrading NGINX web server configuration..."
 
-# Create a dedicated nginx config
+# Create a dedicated NGINX config
 ynh_add_nginx_config
 
 #=================================================
-# CREATE DEDICATED USER
+# UPGRADE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
+ynh_script_progression --message="Upgrading dependencies..."
 
-# Create a dedicated user (if not existing)
-ynh_system_user_create --username="list"
+echo "mailman mailman/default_server_language select $language" | debconf-set-selections
+echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
+echo "mailman mailman/create_site_list select " | debconf-set-selections
+ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # SPECIFIC UPGRADE
@@ -97,36 +90,30 @@ ynh_system_user_create --username="list"
 ynh_script_progression --message="Add YunoHost specific theme..." --weight=1
 
 # Custom template for listinfo
-cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
+ynh_add_config --template="../sources/html/listinfo.html" --destination="/var/lib/mailman/templates/en/listinfo.html"
 
 #=================================================
 # POSTFIX CONFIGURATION
 #=================================================
-
 ynh_script_progression --message="Configuring postfix mail server..."
 
 # Add postfix configuration hook and regen postfix conf
-cp -R ../sources/hooks/conf_regen/98-postfix_mailman /usr/share/yunohost/hooks/conf_regen/
-yunohost tools regen-conf postfix
+ynh_add_config --template="../sources/hooks/conf_regen/98-postfix_mailman" --destination="/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
 
 #=================================================
+# UPDATE A CONFIG FILE
+#=================================================
+ynh_script_progression --message="Updating a configuration file..."
+
+ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
 
 #=================================================
-# MODIFY A CONFIG FILE
+# SETUP SYSTEMD
 #=================================================
-ynh_script_progression --message="Upgrading mailman configuration file..." --weight=1
+ynh_script_progression --message="Upgrading systemd configuration..."
 
-### Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
-ynh_backup_if_checksum_is_different --file="/etc/mailman/mm_cfg.py"
-
-ynh_replace_string "__MAILMAN_DOMAIN__"   "$domain"              ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_WEB_PATH__" "$path_url" ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_LANGUAGE__" "$language"            ../conf/mm_cfg.py
-cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
-
-# Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum --file="/etc/mailman/mm_cfg.py"
+# Create a dedicated systemd config
+systemctl enable $app.service --quiet
 
 #=================================================
 # GENERIC FINALIZATION
@@ -142,44 +129,28 @@ chown list:www-data -R /var/lib/mailman/archives/
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..." --weight=1
+ynh_script_progression --message="Integrating service in YunoHost..."
 
 yunohost service add $app --description="Manage email discussion and e-newsletter lists" --log="/var/log/$app/error"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --weight=1
+ynh_script_progression --message="Starting a systemd service..."
 
-ynh_systemd_action --service_name=$app --action="start"
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..." --weight=1
-
-# Fix legacy settings (old unprotected_regex)
-ynh_app_setting_delete --app=$app --key=unprotected_regex
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# unprotected_uris allows SSO credentials to be passed anyway
-	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-fi
-ynh_app_setting_set "$app" protected_uris "/admin"
+yunohost tools regen-conf postfix
+ynh_systemd_action --service_name=postfix --action=restart
+ynh_systemd_action --service_name=$app --action=restart
 
 #=================================================
-# RELOAD SERVICES
+# RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading services..." --weight=1
+ynh_script_progression --message="Reloading NGINX web server..."
 
-ynh_systemd_action --service_name=$app --action=reload
-ynh_systemd_action --service_name=postfix --action=reload
 ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --last
+ynh_script_progression --message="Upgrade of $app completed"
