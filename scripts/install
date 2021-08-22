@@ -57,7 +57,7 @@ ynh_script_progression --message="Installing dependencies..."
 echo "mailman mailman/default_server_language select $language" | debconf-set-selections
 echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
 echo "mailman mailman/create_site_list select " | debconf-set-selections
-ynh_install_app_dependencies $pkg_dependencies
+ynh_exec_warn_less ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # NGINX CONFIGURATION
