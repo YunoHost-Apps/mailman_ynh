@@ -57,6 +57,9 @@ ynh_systemd_action --service_name=$app --action="stop"
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..."
 
+# Fix legacy settings (old unprotected_regex)
+ynh_app_setting_delete --app=$app --key=unprotected_regex
+
 # Cleaning legacy permissions
 if ynh_legacy_permissions_exists; then
 	ynh_legacy_permissions_delete_all
