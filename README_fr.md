@@ -21,14 +21,11 @@ Gérez des listes de diffusion et newsletters
 
 ![](./doc/screenshots/screenshot.png)
 
-## Avertissements / informations importantes
-
-## Configuration
-
-How to configure this app: From an admin panel, a plain file with SSH, or any other way.
-
 ## Documentations et ressources
 
+* Site officiel de l'app : http://www.list.org/
+* Documentation officielle de l'admin : http://www.list.org/docs.html
+* Dépôt de code officiel de l'app : https://code.launchpad.net/mailman
 * Documentation YunoHost pour cette app : https://yunohost.org/app_mailman
 * Signaler un bug : https://github.com/YunoHost-Apps/mailman_ynh/issues
 
