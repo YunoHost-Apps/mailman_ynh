@@ -6,6 +6,7 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
+source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -14,10 +15,11 @@ source /usr/share/yunohost/helpers
 ynh_script_progression --message="Loading installation settings..." --weight=1
 
 app=$YNH_APP_INSTANCE_NAME
+
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
-is_public=$(ynh_app_setting_get --app=$app --key=is_public)
 language=$(ynh_app_setting_get --app=$app --key=language)
+admin=$(ynh_app_setting_get --app=$app --key=admin)
 
 #=================================================
 # CHECK VERSION
@@ -25,21 +27,7 @@ language=$(ynh_app_setting_get --app=$app --key=language)
 
 upgrade_type=$(ynh_check_app_version_changed)
 
-#=================================================
-# ENSURE DOWNWARD COMPATIBILITY
-#=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
-
-# Fix is_public as a boolean value
-if [ "$is_public" = "Yes" ]; then
-	ynh_app_setting_set --app=$app --key=is_public --value=1
-	is_public=1
-elif [ "$is_public" = "No" ]; then
-	ynh_app_setting_set --app=$app --key=is_public --value=0
-	is_public=0
-fi
-
-#=================================================
+#==============================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
 ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=1
@@ -54,13 +42,33 @@ ynh_clean_setup () {
 ynh_abort_if_errors
 
 #=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
 ynh_script_progression --message="Stopping a systemd service..." --weight=1
 
 ynh_systemd_action --service_name=$app --action="stop"
+
+#=================================================
+# ENSURE DOWNWARD COMPATIBILITY
+#=================================================
+ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+
+# If the admin is not defined, We can't upgrade this app
+if [ -z "$admin" ]; then
+	ynh_die --message="This app can't be upgraded from a very old version of the package. Please remove and reinstall Mailman"
+fi
+
+# Cleaning legacy permissions
+if ynh_legacy_permissions_exists; then
+	ynh_legacy_permissions_delete_all
+
+	ynh_app_setting_delete --app=$app --key=is_public
+fi
+
+if ! ynh_permission_exists --permission="admin"; then
+	# Create the required permissions
+	ynh_permission_create --permission="admin" --url="/admin" --allowed=$admin
+fi
 
 #=================================================
 # INSTALL DEPENDENCIES
@@ -76,7 +84,7 @@ ynh_install_app_dependencies fcgiwrap mailman
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading nginx web server configuration..." --weight=1
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -114,19 +122,9 @@ yunohost tools regen-conf postfix
 #=================================================
 # MODIFY A CONFIG FILE
 #=================================================
-ynh_script_progression --message="Upgrading mailman configuration file..." --weight=1
+ynh_script_progression --message="Upgrading Mailman configuration file..." --weight=1
 
-### Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
-ynh_backup_if_checksum_is_different --file="/etc/mailman/mm_cfg.py"
-
-ynh_replace_string "__MAILMAN_DOMAIN__"   "$domain"              ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_WEB_PATH__" "$path_url" ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_LANGUAGE__" "$language"            ../conf/mm_cfg.py
-cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
-
-# Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum --file="/etc/mailman/mm_cfg.py"
+ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -152,22 +150,6 @@ yunohost service add $app --description="Manage email discussion and e-newslette
 ynh_script_progression --message="Starting a systemd service..." --weight=1
 
 ynh_systemd_action --service_name=$app --action="start"
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..." --weight=1
-
-# Fix legacy settings (old unprotected_regex)
-ynh_app_setting_delete --app=$app --key=unprotected_regex
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# unprotected_uris allows SSO credentials to be passed anyway
-	ynh_app_setting_set --app=$app --key=unprotected_uris --value="/"
-fi
-ynh_app_setting_set "$app" protected_uris "/admin"
 
 #=================================================
 # RELOAD SERVICES

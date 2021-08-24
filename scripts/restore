@@ -15,16 +15,18 @@ ynh_abort_if_errors
 #=================================================
 
 app=$YNH_APP_INSTANCE_NAME
-domain=$(ynh_app_setting_get "$app" domain)
-path_url=$(ynh_app_setting_get "$app" path)
-language=$(ynh_app_setting_get "$app" language)
+
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+language=$(ynh_app_setting_get --app=$app --key=language)
 
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
+ynh_script_progression --message="Validating restoration parameters..." --weight=1
 
-ynh_webpath_available "$domain" "$path_url" \
-    || ynh_die "Path not available: ${domain}${path_url}"
+ynh_webpath_available --domain=$domain --path_url=$path_url \
+	|| ynh_die --message="Path not available: ${domain}${path_url}"
 
 #=================================================
 # INSTALL DEPENDENCIES
@@ -78,3 +80,9 @@ ynh_systemd_action --service_name=mailman --action=enable
 ynh_systemd_action --service_name=mailman --action=restart
 ynh_systemd_action --service_name=postfix --action=restart
 ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Restoration completed for $app" --last
