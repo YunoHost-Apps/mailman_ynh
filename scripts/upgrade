@@ -58,6 +58,9 @@ ynh_systemd_action --service_name=$app --action="stop"
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
 
+# Fix legacy settings (old unprotected_regex)
+ynh_app_setting_delete --app=$app --key=unprotected_regex
+
 # If the admin is not defined, We can't upgrade this app
 if [ -z "$admin" ]; then
 	ynh_die --message="This app can't be upgraded from a very old version of the package. Please remove and reinstall Mailman"
