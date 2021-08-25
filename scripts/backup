@@ -44,14 +44,14 @@ ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 # BACKUP VARIOUS FILES
 #=================================================
 
+ynh_backup --src_path="/etc/$app"
+
 ynh_backup --src_path="/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
 
 for NAME in archives data lists qfiles spam
 do
 	ynh_backup --src_path="/var/lib/mailman/$NAME"
 done
-
-ynh_backup --src_path="/etc/mailman/"
 
 #=================================================
 # END OF SCRIPT
