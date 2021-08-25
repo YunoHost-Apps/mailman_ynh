@@ -15,7 +15,6 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 ynh_clean_setup () {
-	### Remove this function if there's nothing to clean before calling the remove script.
 	true
 }
 # Exit if an error occurs during the execution of the script
@@ -36,23 +35,23 @@ domain=$(ynh_app_setting_get --app=$app --key=domain)
 ynh_print_info --message="Declaring files to be backed up..."
 
 #=================================================
-# BACKUP FILES
+# BACKUP THE NGINX CONFIGURATION
 #=================================================
 
-ynh_backup "/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+
+#=================================================
+# BACKUP VARIOUS FILES
+#=================================================
+
+ynh_backup --src_path="/etc/$app"
+
+ynh_backup --src_path="/usr/share/yunohost/hooks/conf_regen/98-postfix_mailman"
 
 for NAME in archives data lists qfiles spam
 do
 	ynh_backup --src_path="/var/lib/mailman/$NAME"
 done
-
-ynh_backup --src_path="/etc/mailman/"
-
-#=================================================
-# BACKUP THE NGINX CONFIGURATION
-#=================================================
-
-ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # END OF SCRIPT
