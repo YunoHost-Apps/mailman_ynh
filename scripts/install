@@ -1,17 +1,21 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC STARTING
+# GENERIC START
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
+source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE FAILURE OF THE SCRIPT
+# MANAGE SCRIPT FAILURE
 #=================================================
 
+ynh_clean_setup () {
+	ynh_clean_check_starting
+}
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
@@ -21,24 +25,30 @@ ynh_abort_if_errors
 
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
-admin_password=$YNH_APP_ARG_ADMIN_PASSWORD
-language=$YNH_APP_ARG_LANGUAGE
+admin=$YNH_APP_ARG_ADMIN
 is_public=$YNH_APP_ARG_IS_PUBLIC
+language=$YNH_APP_ARG_LANGUAGE
+password=$YNH_APP_ARG_PASSWORD
+path_url_slash_less=${path_url%/}
 
 app=$YNH_APP_INSTANCE_NAME
 
-path_url_slash_less=${path_url%/}
-
 #=================================================
-# STORE SETTINGS FROM MANIFEST
+# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
+ynh_script_progression --message="Validating installation parameters..."
 
 # Register (book) web path
 ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 
-ynh_script_progression --message="Storing installation settings..."
+#=================================================
+# STORE SETTINGS FROM MANIFEST
+#=================================================
+ynh_script_progression --message="Storing installation settings..." --weight=1
 
-ynh_app_setting_set --app=$app --key=is_public --value=$is_public
+ynh_app_setting_set --app=$app --key=domain --value=$domain
+ynh_app_setting_set --app=$app --key=path --value=$path_url
+ynh_app_setting_set --app=$app --key=admin --value=$admin
 ynh_app_setting_set --app=$app --key=language --value=$language
 
 #=================================================
@@ -46,44 +56,48 @@ ynh_app_setting_set --app=$app --key=language --value=$language
 #=================================================
 # INSTALL DEPENDENCIES
 #=================================================
-
 ynh_script_progression --message="Installing dependencies..."
 
 echo "mailman mailman/default_server_language select $language" | debconf-set-selections
 echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
 echo "mailman mailman/create_site_list select " | debconf-set-selections
-ynh_install_app_dependencies fcgiwrap mailman
 
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Configuring NGINX web server..."
+
+# Create a dedicated NGINX config
+ynh_replace_string "__PATH__/" "$path_url_slash_less/" ../conf/nginx.conf
+ynh_add_nginx_config
+
+#=================================================
+# SPECIFIC SETUP
 #=================================================
 # SET MAILMAN PASSWORD
 #=================================================
-
 ynh_script_progression --message="Configuring Mailman..."
 
-/var/lib/mailman/bin/mmsitepass "$admin_password"
+/var/lib/mailman/bin/mmsitepass "$password"
 
 #=================================================
-# MAILMAN CONFIGURATION
+# ADD A CONFIGURATION
 #=================================================
+ynh_script_progression --message="Adding a configuration file..."
 
 # Generate conf file from template
-ynh_replace_string "__MAILMAN_DOMAIN__"   "$domain"              ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_WEB_PATH__" "$path_url_slash_less" ../conf/mm_cfg.py
-ynh_replace_string "__MAILMAN_LANGUAGE__" "$language"            ../conf/mm_cfg.py
-cp ../conf/mm_cfg.py /etc/mailman/mm_cfg.py
+ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
 
 # Create a first "mailman" list
-newlist mailman "root@$domain" "$admin_password" <<< "\\n"
+newlist mailman "root@$domain" "$password" <<< "\\n"
 /var/lib/mailman/bin/genaliases
-
-# Fix permissions
-chown -hR list:list /var/lib/mailman/
-/var/lib/mailman/bin/check_perms -f > /dev/null
-chown list:www-data -R /var/lib/mailman/archives/
 
 #=================================================
 # TWEAKING ....
 #=================================================
+ynh_script_progression --message="Tweaking..."
 
 # Custom template for listinfo
 cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
@@ -91,26 +105,31 @@ cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
 # Tweak ugly footer, just say it's powered by Mailman 2.1...
 sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "Powered by Mailman 2.1")/g' /var/lib/mailman/Mailman/htmlformat.py
 
+# Fix permissions
+chown -hR list:list /var/lib/mailman/
+/var/lib/mailman/bin/check_perms -f > /dev/null
+chown list:www-data -R /var/lib/mailman/archives/
+
 #=================================================
 # POSTFIX CONFIGURATION
 #=================================================
-
 ynh_script_progression --message="Configuring postfix mail server..."
 
 # Add postfix configuration hook and regen postfix conf
 cp -R ../sources/hooks/conf_regen/98-postfix_mailman /usr/share/yunohost/hooks/conf_regen/
 yunohost tools regen-conf postfix
+ynh_systemd_action --service_name=postfix --action="restart"
 
 #=================================================
-# NGINX CONFIGURATION
+# SETUP SYSTEMD
 #=================================================
+ynh_script_progression --message="Configuring a systemd service..."
 
-ynh_script_progression --message="Configuring nginx web server..."
+# Create a dedicated systemd config
+systemctl enable $app.service --quiet
 
-# Create a dedicated nginx config
-ynh_replace_string "__PATH__/" "$path_url_slash_less/" ../conf/nginx.conf
-ynh_add_nginx_config
-
+#=================================================
+# GENERIC FINALIZATION
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
@@ -119,21 +138,38 @@ ynh_script_progression --message="Integrating service in YunoHost..." --weight=1
 yunohost service add $app --description="Manage email discussion and e-newsletter lists" --log="/var/log/$app/error"
 
 #=================================================
-# SSOWAT CONFIGURATION
+# START SYSTEMD SERVICE
 #=================================================
+ynh_script_progression --message="Starting a systemd service..." --weight=1
 
-ynh_script_progression --message="Configuring SSOwat..."
-
-[ "$is_public" -eq 0 ] || ynh_app_setting_set "$app" unprotected_uris "/"
-ynh_app_setting_set "$app" protected_uris "/admin"
+# Start a systemd service
+ynh_systemd_action --service_name=$app --action="restart"
 
 #=================================================
-# RESTART SERVICES
+# SETUP SSOWAT
 #=================================================
+ynh_script_progression --message="Configuring permissions..." --weight=1
 
-ynh_script_progression --message="Finalizing installation..."
+# Make app public if necessary
+if [ $is_public -eq 1 ]
+then
+	# Everyone can access the app.
+	# The "main" permission is automatically created before the install script.
+	ynh_permission_update --permission="main" --add="visitors"
+fi
 
-ynh_systemd_action --service_name=mailman --action=enable
-ynh_systemd_action --service_name=mailman --action=restart
-ynh_systemd_action --service_name=postfix --action=restart
+# Only the admin can access the admin panel of the app (if the app has an admin panel)
+ynh_permission_create --permission="admin" --url="/admin" --allowed=$admin
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading NGINX web server..."
+
 ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Installation of $app completed" --last
