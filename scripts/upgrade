@@ -63,7 +63,7 @@ ynh_app_setting_delete --app=$app --key=unprotected_regex
 
 # If the admin is not defined, We can't upgrade this app
 if [ -z "$admin" ]; then
-	ynh_die --message="This app can't be upgraded from a very old version of the package. Please remove and reinstall Mailman"
+	ynh_die --message="You are upgrading mailman from an old version. Unfortunately, for this to work, you need to manually define an admin user for this application. You can do so from the command line using : sudo yunohost app setting set mailman admin -v some_admin_user. Note that 'some_admin_user' must correspond to an existing YunoHost username."
 fi
 
 # Cleaning legacy permissions
