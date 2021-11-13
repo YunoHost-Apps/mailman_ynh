@@ -32,8 +32,7 @@
         "install" : [
             {
                 "name": "domain",
-                "type": "domain",
-                "example": "example.com"
+                "type": "domain"
             },
             {
                 "name": "path",
@@ -43,8 +42,7 @@
             },
             {
                 "name": "admin",
-                "type": "user",
-                "example": "johndoe"
+                "type": "user"
             },
             {
                 "name": "is_public",
@@ -67,8 +65,7 @@
                 "help": {
                     "en": "It will be needed to create and administrate lists. Be careful though: this password will be stored in clear on the disk :/ ...",
                     "fr": "Il sera nécessaire pour créer et administrer des listes. Attention cependant : ce mot de passe sera stocké en clair sur le disque: / ..."
-                },
-                "example": "Choose a password"
+                }
             }
         ]
     }
