@@ -64,7 +64,7 @@
                 "type": "password",
                 "help": {
                     "en": "It will be needed to create and administrate lists. Be careful though: this password will be stored in clear on the disk :/ ...",
-                    "fr": "Il sera nécessaire pour créer et administrer des listes. Attention cependant : ce mot de passe sera stocké en clair sur le disque: / ..."
+                    "fr": "Il sera nécessaire pour créer et administrer des listes. Attention cependant : ce mot de passe sera stocké en clair sur le disque :/ ..."
                 }
             }
         ]
