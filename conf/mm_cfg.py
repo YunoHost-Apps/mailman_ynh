@@ -58,16 +58,16 @@ MAILMAN_SITE_LIST = 'mailman'
 # If you change these, you have to configure your http server
 # accordingly (Alias and ScriptAlias directives in most httpds)
 
-DEFAULT_URL_PATTERN = 'https://%s__MAILMAN_WEB_PATH__/'
-IMAGE_LOGOS         = '__MAILMAN_WEB_PATH__/images/'
-SITE_LOGO           = '__MAILMAN_WEB_PATH__/images/debianpowered.png'
+DEFAULT_URL_PATTERN = 'https://%s__PATH__/'
+IMAGE_LOGOS         = '__PATH__/images/'
+SITE_LOGO           = '__PATH__/images/debianpowered.png'
 
 #-------------------------------------------------------------
 # Default domain for email addresses of newly created MLs
-DEFAULT_EMAIL_HOST = '__MAILMAN_DOMAIN__'
+DEFAULT_EMAIL_HOST = '__DOMAIN__'
 #-------------------------------------------------------------
 # Default host for web interface of newly created MLs
-DEFAULT_URL_HOST   = '__MAILMAN_DOMAIN__'
+DEFAULT_URL_HOST   = '__DOMAIN__'
 #-------------------------------------------------------------
 # Required when setting any of its arguments.
 add_virtualhost(DEFAULT_URL_HOST, DEFAULT_EMAIL_HOST)
@@ -79,11 +79,11 @@ VIRTUAL_MAILMAN_LOCAL_DOMAIN = "localhost"
 
 #-------------------------------------------------------------
 # Path for archives
-PUBLIC_ARCHIVE_URL = 'https://%(hostname)s__MAILMAN_WEB_PATH__/archives/%(listname)s'
+PUBLIC_ARCHIVE_URL = 'https://%(hostname)s__PATH__/archives/%(listname)s'
 
 #-------------------------------------------------------------
 # The default language for this server.
-DEFAULT_SERVER_LANGUAGE = '__MAILMAN_LANGUAGE__'
+DEFAULT_SERVER_LANGUAGE = '__LANGUAGE__'
 
 #-------------------------------------------------------------
 # Iirc this was used in pre 2.1, leave it for now
@@ -106,7 +106,7 @@ DEFAULT_SEND_REMINDERS = 0
 # /usr/share/doc/mailman/README.Debian first.
 MTA='Postfix'
 
-POSTFIX_STYLE_VIRTUAL_DOMAINS = [ '__MAILMAN_DOMAIN__' ]
+POSTFIX_STYLE_VIRTUAL_DOMAINS = [ '__DOMAIN__' ]
 
 #-------------------------------------------------------------
 # Uncomment if you want to filter mail with SpamAssassin. For
