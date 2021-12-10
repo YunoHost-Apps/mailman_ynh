@@ -100,7 +100,7 @@ newlist mailman "root@$domain" "$password" <<< "\\n"
 ynh_script_progression --message="Tweaking..."
 
 # Custom template for listinfo
-cp ../sources/html/listinfo.html /var/lib/mailman/templates/en/
+ynh_add_config --template="../sources/html/listinfo.html" --destination="/var/lib/mailman/templates/en/"
 
 # Tweak ugly footer, just say it's powered by Mailman 2.1...
 sed -i 's/def MailmanLogo()\:/def MailmanLogo():\n    return Link(MAILMAN_URL, "Powered by Mailman 2.1")/g' /var/lib/mailman/Mailman/htmlformat.py
