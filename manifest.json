@@ -51,7 +51,7 @@
                 "help": {
                     "en": "Will people without YunoHost account have access to mailman ?",
                     "fr": "Des personnes sans compte YunoHost pourront-elles avoir un accès à mailman ?"
-                },
+                }
             },
             {
                 "name": "language",
