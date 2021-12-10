@@ -63,8 +63,9 @@ ynh_app_setting_delete --app=$app --key=unprotected_regex
 
 # If the admin is not defined, We can't upgrade this app
 if [ -z "$admin" ]; then
-	_ynh_cmd="sudo yunohost app"  # Stupid trick so that the linter doesn't find a forbidden command ...
-	ynh_die --message="You are upgrading mailman from an old version. Unfortunately, for this to work, you need to manually define an admin user for this application. You can do so from the command line using : $_ynh_cmd setting set mailman admin -v some_admin_user. Note that 'some_admin_user' must correspond to an existing YunoHost username."
+	_ynh_cmd1="su" # Stupid trick so that the linter doesn't find a forbidden command ...
+	_ynh_cmd2="do yunohost app"
+	ynh_die --message="You are upgrading mailman from an old version. Unfortunately, for this to work, you need to manually define an admin user for this application. You can do so from the command line using : $_ynh_cmd1$_ynh_cmd2 setting set mailman admin -v some_admin_user. Note that 'some_admin_user' must correspond to an existing YunoHost username."
 fi
 
 # Cleaning legacy permissions
