@@ -32,13 +32,6 @@ path_url=$(ynh_app_setting_get --app=$app --key=path)
 language=$(ynh_app_setting_get --app=$app --key=language)
 
 #=================================================
-# CHECK IF THE APP CAN BE RESTORED
-#=================================================
-ynh_script_progression --message="Validating restoration parameters..." --weight=1
-
-test ! -d $final_path || ynh_die --message="There is already a directory: $final_path "
-
-#=================================================
 # STANDARD RESTORATION STEPS
 #=================================================
 # RESTORE THE NGINX CONFIGURATION
