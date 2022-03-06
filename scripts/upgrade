@@ -18,8 +18,8 @@ app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
-admin=$(ynh_app_setting_get --app=$app --key=admin)
 language=$(ynh_app_setting_get --app=$app --key=language)
+admin=$(ynh_app_setting_get --app=$app --key=admin)
 path_url_slash_less=${path_url%/}
 
 #=================================================
@@ -160,7 +160,7 @@ ynh_systemd_action --service_name=$app --action="start"
 #=================================================
 ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
-ynh_systemd_action --service_name=nginx --action="reload"
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
