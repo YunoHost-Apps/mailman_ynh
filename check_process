@@ -14,6 +14,9 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
+		# 2.1.29-1~ynh2
+		upgrade=1	from_commit=74754abc96057eec8f9a4c8902ad43299950c8b3
+		# 2.1-2
 		upgrade=1	from_commit=3b980e7a46de9861d178d92d18f6f6dd269c93c8
 		backup_restore=1
 		multi_instance=0
