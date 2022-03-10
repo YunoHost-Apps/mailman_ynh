@@ -21,6 +21,10 @@ Gérez des listes de diffusion et newsletters
 
 ![](./doc/screenshots/screenshot.png)
 
+## Avertissements / informations importantes
+
+Mailman2 is a deprecated software : it relies on Python 2 which reached end of life in January 2020. Mailman 2 is not being developed anymore, and wont be available on Debian Bullseye / Yunohost 11.x. You should really consider using alternative solutions.
+
 ## Documentations et ressources
 
 * Site officiel de l'app : http://www.list.org/
