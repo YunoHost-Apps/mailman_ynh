@@ -89,6 +89,7 @@ ynh_script_progression --message="Adding a configuration file..."
 
 # Generate conf file from template
 ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
+chmod 644 "/etc/mailman/mm_cfg.py"
 
 # Create a first "mailman" list
 newlist mailman "root@$domain" "$password" <<< "\\n"

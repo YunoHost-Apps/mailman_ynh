@@ -6,7 +6,7 @@
         "en": "Manage email discussion and e-newsletter lists",
         "fr": "Gérez des listes de diffusion et newsletters"
     },
-    "version": "2.1.29-1~ynh2",
+    "version": "2.1.29-1~ynh3",
     "url": "http://www.list.org/",
     "upstream": {
         "license": "GPL-2.0",
@@ -29,7 +29,7 @@
         "postfix"
     ],
     "arguments": {
-        "install" : [
+        "install": [
             {
                 "name": "disclaimer",
                 "type": "alert",

@@ -34,13 +34,6 @@ language=$(ynh_app_setting_get --app=$app --key=language)
 #=================================================
 # STANDARD RESTORATION STEPS
 #=================================================
-# RESTORE THE NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Restoring the NGINX web server configuration..."
-
-ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
-
-#=================================================
 # SPECIFIC RESTORATION
 #=================================================
 # REINSTALL DEPENDENCIES
@@ -51,6 +44,13 @@ echo "mailman mailman/default_server_language select $language" | debconf-set-se
 echo "mailman mailman/site_languages  multiselect $language" | debconf-set-selections
 echo "mailman mailman/create_site_list select " | debconf-set-selections
 ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
+# RESTORE THE NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Restoring the NGINX web server configuration..."
+
+ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # RESTORE VARIOUS FILES
