@@ -154,7 +154,7 @@ yunohost service add $app --description="Manage email discussion and e-newslette
 #=================================================
 ynh_script_progression --message="Starting a systemd service..." --weight=1
 
-ynh_systemd_action --service_name=$app --action="start"
+ynh_systemd_action --service_name=$app --action="start" --log_path="systemd" --line_match="Started Mailman Master Queue Runner"
 
 #=================================================
 # RELOAD NGINX
