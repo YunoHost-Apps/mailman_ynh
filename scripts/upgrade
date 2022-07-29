@@ -89,15 +89,6 @@ ynh_script_progression --message="Making sure dedicated system user exists..." -
 ynh_system_user_create --username="list"
 
 #=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
-
-# Create a dedicated NGINX config
-ynh_replace_string "__PATH__/" "$path_url_slash_less/" ../conf/nginx.conf
-ynh_add_nginx_config
-
-#=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
 ynh_script_progression --message="Upgrading dependencies..."
@@ -108,6 +99,15 @@ echo "mailman mailman/create_site_list select " | debconf-set-selections
 ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
+
+# Create a dedicated NGINX config
+ynh_replace_string "__PATH__/" "$path_url_slash_less/" ../conf/nginx.conf
+ynh_add_nginx_config
+
+#=================================================
 # SPECIFIC UPGRADE
 #=================================================
 # UPDATE A CONFIG FILE
@@ -115,6 +115,7 @@ ynh_install_app_dependencies $pkg_dependencies
 ynh_script_progression --message="Updating a configuration file..." --weight=1
 
 ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
+chmod 644 "/etc/mailman/mm_cfg.py"
 
 #=================================================
 # TWEAKING ....
@@ -153,7 +154,7 @@ yunohost service add $app --description="Manage email discussion and e-newslette
 #=================================================
 ynh_script_progression --message="Starting a systemd service..." --weight=1
 
-ynh_systemd_action --service_name=$app --action="start"
+ynh_systemd_action --service_name=$app --action="start" --log_path="systemd" --line_match="Started Mailman Master Queue Runner"
 
 #=================================================
 # RELOAD NGINX

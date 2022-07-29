@@ -89,9 +89,10 @@ ynh_script_progression --message="Adding a configuration file..."
 
 # Generate conf file from template
 ynh_add_config --template="../conf/mm_cfg.py" --destination="/etc/mailman/mm_cfg.py"
+chmod 644 "/etc/mailman/mm_cfg.py"
 
 # Create a first "mailman" list
-newlist mailman "root@$domain" "$password" <<< "\\n"
+newlist --language=$language mailman "root@$domain" "$password" <<< "\\n"
 /var/lib/mailman/bin/genaliases
 
 #=================================================
@@ -143,7 +144,7 @@ yunohost service add $app --description="Manage email discussion and e-newslette
 ynh_script_progression --message="Starting a systemd service..." --weight=1
 
 # Start a systemd service
-ynh_systemd_action --service_name=$app --action="restart"
+ynh_systemd_action --service_name=$app --action="restart" --log_path="systemd" --line_match="Started Mailman Master Queue Runner"
 
 #=================================================
 # SETUP SSOWAT

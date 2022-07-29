@@ -1,0 +1,1 @@
+Mailman2 est un logiciel déprécié : il repose sur Python 2 qui a atteint sa fin de vie en janvier 2020. Mailman 2 n'est plus développé, et ne sera pas disponible sur Debian Bullseye / Yunohost 11.x. Vous devriez vraiment envisager d'utiliser des solutions alternatives.
