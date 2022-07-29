@@ -6,7 +6,7 @@
         "en": "Manage email discussion and e-newsletter lists",
         "fr": "Gérez des listes de diffusion et newsletters"
     },
-    "version": "2.1.29-1~ynh2",
+    "version": "2.1.29-1~ynh3",
     "url": "http://www.list.org/",
     "upstream": {
         "license": "GPL-2.0",
@@ -29,10 +29,10 @@
         "postfix"
     ],
     "arguments": {
-        "install" : [
+        "install": [
             {
                 "name": "disclaimer",
-                "type": "alert",
+                "type": "display_text",
                 "style": "danger",
                 "ask": {
                     "en": "Mailman2 is a deprecated software : it relies on Python 2 which reached end of life in January 2020. Mailman 2 is not being developed anymore, and wont be available on Debian Bullseye / Yunohost 11.x. You should really consider using alternative solutions."
